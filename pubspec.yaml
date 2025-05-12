@@ -1,0 +1,28 @@
+name: ultimate_texas_holdem_poc
+description: A proof-of-concept two-player Texas Hold’em game in Flutter
+publish_to: "none" # this is a local/demo project
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Card rendering & layouts
+  playing_cards: ^0.4.1+11
+  playing_cards_layouts: ^1.0.1
+
+  # Poker hand evaluation
+  poker_solver: ^1.0.0
+
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
