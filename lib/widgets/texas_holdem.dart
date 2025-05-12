@@ -2,7 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:playing_cards/playing_cards.dart';
 import 'package:poker_solver/poker_solver.dart';
-import '../utility/convert_card.dart';
+import 'package:ultimate_texas_holdem_poc/utility/poker_hand.dart';
+import 'package:ultimate_texas_holdem_poc/deck.dart';
 
 class TexasHoldemDemo extends StatefulWidget {
   const TexasHoldemDemo({super.key});
@@ -12,17 +13,18 @@ class TexasHoldemDemo extends StatefulWidget {
 }
 
 class TexasHoldemDemoState extends State<TexasHoldemDemo> {
-  List<PlayingCard> deck = [];
+  Deck deck = Deck();
+  List<PlayingCard> deckOld = [];
   List<PlayingCard> player1 = [];
-  List<PlayingCard> player2 = [];
+  List<PlayingCard> dealer = [];
   List<PlayingCard> community = [];
   List<PlayingCard> burnPile = [];
   bool showBacks = true;
   String? player1Hand = '';
-  String? player2Hand = '';
+  String? dealerHand = '';
   String result = '';
   String? selectedBetMultiplier;
-  List<String> availableMultipliers = ['3x', '4x'];
+  List<String> availableMultipliers = ['4x', '3x'];
   int checkRound = 0;
   bool gameEnded = false;
 
@@ -33,49 +35,31 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
   }
 
   void _dealHands() {
-    // build & shuffle
-    deck = List.from(standardFiftyFourCardDeck())
-      ..removeWhere(
-          (c) => c.value == CardValue.joker_1 || c.value == CardValue.joker_2)
-      ..shuffle(Random());
-
-    // deal hole cards
-    player1 = [deck.removeAt(0), deck.removeAt(0)];
-    player2 = [deck.removeAt(0), deck.removeAt(0)];
-
-    // flop
-    burnPile.add(deck.removeAt(0));
-    community.addAll([deck.removeAt(0), deck.removeAt(0), deck.removeAt(0)]);
-    // turn
-    burnPile.add(deck.removeAt(0));
-    community.add(deck.removeAt(0));
-    // river
-    burnPile.add(deck.removeAt(0));
-    community.add(deck.removeAt(0));
+    deck.shuffle();
+    player1 = deck.draw(2);
+    dealer = deck.draw(2);
+    community = deck.draw(5);
 
     setState(() {});
   }
 
   void _evaluateHands() {
-    final comm = community.map(CardConverter.convertToPokerCard).toList();
-    final h1 = Hand.solveHand(
-        [...player1.map(CardConverter.convertToPokerCard), ...comm]);
-    final h2 = Hand.solveHand(
-        [...player2.map(CardConverter.convertToPokerCard), ...comm]);
+    final h1 = PokerHand().evaluate([...community, ...player1]);
+    final h2 = PokerHand().evaluate([...community, ...dealer]);
     final winners = Hand.winners([h1, h2]);
 
     setState(() {
       showBacks = false;
       // store each player's best hand name
       player1Hand = h1.descr;
-      player2Hand = h2.descr;
+      dealerHand = h2.descr;
 
       if (winners.length == 2) {
         result = 'Tie: ${h1.name}';
       } else if (winners[0] == h1) {
         result = 'Player 1 wins with ${h1.descr}';
       } else {
-        result = 'Player 2 wins with ${h2.descr}';
+        result = 'Dealer wins with ${h2.descr}';
       }
     });
   }
@@ -118,16 +102,19 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
       // Reset all state variables
       showBacks = true;
       player1Hand = '';
-      player2Hand = '';
+
+      dealerHand = '';
       result = '';
-      selectedBetMultiplier = '3x';
+      selectedBetMultiplier = '4x';
       availableMultipliers = ['3x', '4x'];
       checkRound = 0;
       gameEnded = false;
 
-      // Clear and redeal cards
+      // Clear and re deal cards
       community.clear();
       burnPile.clear();
+      player1.clear();
+      dealer.clear();
       _dealHands();
     });
   }
@@ -160,11 +147,11 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Player 2: $player2Hand',
+                'Dealer: $dealerHand',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               Row(
-                children: player2
+                children: dealer
                     .map((c) => SizedBox(
                           width: 100,
                           height: 100 * (89.0 / 64.0),
@@ -174,8 +161,7 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
               ),
               const SizedBox(height: 24),
               // Community cards
-              const Text('Community Cards:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

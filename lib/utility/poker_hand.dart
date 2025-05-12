@@ -1,8 +1,8 @@
 import 'package:playing_cards/playing_cards.dart'; // For PlayingCard, CardValue, Suit
 import 'package:poker_solver/poker_solver.dart'; // For Card (from poker_solver)
 
-class CardConverter {
-  static Card convertToPokerCard(PlayingCard card) {
+class PokerHand {
+  Card _convertToPokerCard(PlayingCard card) {
     const valueMap = {
       CardValue.two: '2',
       CardValue.three: '3',
@@ -26,5 +26,10 @@ class CardConverter {
     };
     final code = valueMap[card.value]! + suitMap[card.suit]!;
     return Card(code);
+  }
+
+  Hand evaluate(List<PlayingCard> cards) {
+    final pokerCards = cards.map(_convertToPokerCard).toList();
+    return Hand.solveHand(pokerCards);
   }
 }
