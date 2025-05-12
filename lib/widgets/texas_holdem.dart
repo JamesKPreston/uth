@@ -138,119 +138,115 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
       appBar: AppBar(
         title: const Text('Texas Hold\'em POC'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Hole cards & best hand
-            Text(
-              'Player 1: $player1Hand',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: player1
-                  .map((c) => SizedBox(
-                        width: 160,
-                        height: 160 * (89.0 / 64.0),
-                        child: PlayingCardView(card: c, showBack: false),
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Player 2: $player2Hand',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: player2
-                  .map((c) => SizedBox(
-                        width: 160,
-                        height: 160 * (89.0 / 64.0),
-                        child: PlayingCardView(card: c, showBack: showBacks),
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 24),
-            // Community cards
-            const Text('Community Cards:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            Row(
-              children: community.asMap().entries.map((entry) {
-                final index = entry.key;
-                final card = entry.value;
-                if (gameEnded) {
-                  return SizedBox(
-                    width: 160,
-                    height: 160 * (89.0 / 64.0),
-                    child: PlayingCardView(
-                      card: card,
-                      showBack: false,
-                    ),
-                  );
-                } else {
-                  return SizedBox(
-                    width: 160,
-                    height: 160 * (89.0 / 64.0),
-                    child: PlayingCardView(
-                      card: card,
-                      showBack: index < 3 ? checkRound < 1 : checkRound < 2,
-                    ),
-                  );
-                }
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-            // Add these buttons before the Evaluate button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed:
-                      gameEnded ? null : (checkRound < 3 ? _handleCheck : null),
-                  child: Text(checkRound < 2 ? 'Check' : 'Fold'),
-                ),
-                const SizedBox(width: 16),
-                DropdownButton<String>(
-                  value: selectedBetMultiplier ?? availableMultipliers.first,
-                  items: availableMultipliers
-                      .map((multiplier) => DropdownMenuItem(
-                            value: multiplier,
-                            child: Text(multiplier),
-                          ))
-                      .toList(),
-                  onChanged: gameEnded
-                      ? null
-                      : (value) {
-                          setState(() {
-                            selectedBetMultiplier = value;
-                          });
-                        },
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: gameEnded ? null : _handleBet,
-                  child: const Text('Bet'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _evaluateHands,
-              child: const Text('Evaluate Hands'),
-            ),
-            if (result.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(result, style: const TextStyle(fontSize: 16)),
-            ],
-            if (gameEnded) ...[
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _resetGame,
-                child: const Text('Deal Again'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Hole cards & best hand
+              Text(
+                'Player 1: $player1Hand',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
+              Row(
+                children: player1
+                    .map((c) => SizedBox(
+                          width: 100,
+                          height: 100 * (89.0 / 64.0),
+                          child: PlayingCardView(card: c, showBack: false),
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Player 2: $player2Hand',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Row(
+                children: player2
+                    .map((c) => SizedBox(
+                          width: 100,
+                          height: 100 * (89.0 / 64.0),
+                          child: PlayingCardView(card: c, showBack: showBacks),
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: 24),
+              // Community cards
+              const Text('Community Cards:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: community.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final card = entry.value;
+                  if (gameEnded) {
+                    return SizedBox(
+                      width: 100,
+                      height: 100 * (89.0 / 64.0),
+                      child: PlayingCardView(
+                        card: card,
+                        showBack: false,
+                      ),
+                    );
+                  } else {
+                    return SizedBox(
+                      width: 100,
+                      height: 100 * (89.0 / 64.0),
+                      child: PlayingCardView(
+                        card: card,
+                        showBack: index < 3 ? checkRound < 1 : checkRound < 2,
+                      ),
+                    );
+                  }
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              // Add these buttons before the Evaluate button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (gameEnded)
+                    ElevatedButton(
+                      onPressed: _resetGame,
+                      child: const Text('Deal Again'),
+                    )
+                  else ...[
+                    ElevatedButton(
+                      onPressed: checkRound < 3 ? _handleCheck : null,
+                      child: Text(checkRound < 2 ? 'Check' : 'Fold'),
+                    ),
+                    const SizedBox(width: 16),
+                    DropdownButton<String>(
+                      value: selectedBetMultiplier ?? availableMultipliers.first,
+                      items: availableMultipliers
+                          .map((multiplier) => DropdownMenuItem(
+                                value: multiplier,
+                                child: Text(multiplier),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedBetMultiplier = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _handleBet,
+                      child: const Text('Bet'),
+                    ),
+                  ],
+                ],
+              ),
+              if (result.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(result, style: const TextStyle(fontSize: 16)),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
