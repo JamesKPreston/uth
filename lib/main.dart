@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ultimate_texas_holdem_poc/deck.dart';
 import 'widgets/texas_holdem.dart';
 
 void main() {
@@ -10,9 +11,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Texas Hold\'em POC',
-      home: TexasHoldemDemo(),
+      home: TexasHoldemDemo(deck: Deck()),
     );
   }
 }

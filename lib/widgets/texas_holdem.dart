@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:playing_cards/playing_cards.dart';
-import 'package:poker_solver/poker_solver.dart';
-import 'package:ultimate_texas_holdem_poc/utility/poker_hand.dart';
-import 'package:ultimate_texas_holdem_poc/deck.dart';
+import 'package:playing_cards/playing_cards.dart' as playing_cards;
+import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as deck_interface;
+import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 
 class TexasHoldemDemo extends StatefulWidget {
-  const TexasHoldemDemo({super.key});
+  final deck_interface.IDeck deck;
+  const TexasHoldemDemo({required this.deck, super.key});
 
   @override
   TexasHoldemDemoState createState() => TexasHoldemDemoState();
 }
 
 class TexasHoldemDemoState extends State<TexasHoldemDemo> {
-  Deck deck = Deck();
-  List<PlayingCard> deckOld = [];
-  List<PlayingCard> player1 = [];
-  List<PlayingCard> dealer = [];
-  List<PlayingCard> community = [];
-  List<PlayingCard> burnPile = [];
+  late final deck_interface.IDeck deck;
+  List<deck_interface.IPlayingCard> player1 = [];
+  List<deck_interface.IPlayingCard> dealer = [];
+  List<deck_interface.IPlayingCard> community = [];
   bool showBacks = true;
   String? player1Hand = '';
   String? dealerHand = '';
@@ -30,6 +28,7 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
   @override
   void initState() {
     super.initState();
+    deck = widget.deck;
     _dealHands();
   }
 
@@ -43,22 +42,22 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
   }
 
   void _evaluateHands() {
-    final h1 = PokerHand().evaluate([...community, ...player1]);
-    final h2 = PokerHand().evaluate([...community, ...dealer]);
-    final winners = Hand.winners([h1, h2]);
+    final h1 = deck.evaluate([...community, ...player1]);
+    final h2 = deck.evaluate([...community, ...dealer]);
+    final winners = deck.winners([h1, h2]);
 
     setState(() {
       showBacks = false;
       // store each player's best hand name
-      player1Hand = h1.descr;
-      dealerHand = h2.descr;
+      player1Hand = h1.description;
+      dealerHand = h2.description;
 
       if (winners.length == 2) {
         result = 'Tie: ${h1.name}';
       } else if (winners[0] == h1) {
-        result = 'Player 1 wins with ${h1.descr}';
+        result = 'Player 1 wins with ${h1.description}';
       } else {
-        result = 'Dealer wins with ${h2.descr}';
+        result = 'Dealer wins with ${h2.description}';
       }
     });
   }
@@ -111,7 +110,6 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
 
       // Clear and re deal cards
       community.clear();
-      burnPile.clear();
       player1.clear();
       dealer.clear();
       _dealHands();
@@ -140,7 +138,7 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
                     .map((c) => SizedBox(
                           width: 100,
                           height: 100 * (89.0 / 64.0),
-                          child: PlayingCardView(card: c, showBack: false),
+                          child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
                         ))
                     .toList(),
               ),
@@ -154,7 +152,7 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
                     .map((c) => SizedBox(
                           width: 100,
                           height: 100 * (89.0 / 64.0),
-                          child: PlayingCardView(card: c, showBack: showBacks),
+                          child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
                         ))
                     .toList(),
               ),
@@ -171,8 +169,8 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
                     return SizedBox(
                       width: 100,
                       height: 100 * (89.0 / 64.0),
-                      child: PlayingCardView(
-                        card: card,
+                      child: playing_cards.PlayingCardView(
+                        card: card.toPlayingCard(),
                         showBack: false,
                       ),
                     );
@@ -180,8 +178,8 @@ class TexasHoldemDemoState extends State<TexasHoldemDemo> {
                     return SizedBox(
                       width: 100,
                       height: 100 * (89.0 / 64.0),
-                      child: PlayingCardView(
-                        card: card,
+                      child: playing_cards.PlayingCardView(
+                        card: card.toPlayingCard(),
                         showBack: index < 3 ? checkRound < 1 : checkRound < 2,
                       ),
                     );
