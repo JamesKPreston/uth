@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:playing_cards/playing_cards.dart' as playing_cards;
-import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as deck_interface;
+import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 
-class TexasHoldemDemo extends StatefulWidget {
-  final deck_interface.IDeck deck;
-  const TexasHoldemDemo({required this.deck, super.key});
+class UltimateTexasHoldem extends StatefulWidget {
+  final uth_deck.IDeck deck;
+  const UltimateTexasHoldem({required this.deck, super.key});
 
   @override
-  TexasHoldemDemoState createState() => TexasHoldemDemoState();
+  UltimateTexasHoldemState createState() => UltimateTexasHoldemState();
 }
 
-class TexasHoldemDemoState extends State<TexasHoldemDemo> {
-  late final deck_interface.IDeck deck;
-  List<deck_interface.IPlayingCard> player1 = [];
-  List<deck_interface.IPlayingCard> dealer = [];
-  List<deck_interface.IPlayingCard> community = [];
+class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
+  late final uth_deck.IDeck deck;
+  List<uth_deck.IPlayingCard> player1 = [];
+  List<uth_deck.IPlayingCard> dealer = [];
+  List<uth_deck.IPlayingCard> community = [];
   bool showBacks = true;
   String? player1Hand = '';
   String? dealerHand = '';

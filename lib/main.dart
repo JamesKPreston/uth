@@ -3,17 +3,17 @@ import 'package:ultimate_texas_holdem_poc/deck.dart';
 import 'widgets/texas_holdem.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const UTH());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class UTH extends StatelessWidget {
+  const UTH({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Texas Hold\'em POC',
-      home: TexasHoldemDemo(deck: Deck()),
+      home: UltimateTexasHoldem(deck: Deck()),
     );
   }
 }
