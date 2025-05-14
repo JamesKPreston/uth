@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:playing_cards/playing_cards.dart' as playing_cards;
+import 'package:ultimate_texas_holdem_poc/bets/ante.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 
@@ -113,7 +114,8 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
             .every((card) => player1Cards.any((p1Card) => p1Card.value == card.value && p1Card.suit == card.suit));
 
         if (isPlayer1Winner) {
-          var winnings = totalAnteBlind + (currentBet * 2);
+          var ante = Ante().payout(h2, totalAnteBlind / 2) + (totalAnteBlind / 2);
+          var winnings = ante + (currentBet * 2);
           result = 'Player 1 wins $winnings with ${h1.description}';
           // Return ante, blind, and 2x bet amount on win
           player1.bankroll += totalAnteBlind + (currentBet * 2);

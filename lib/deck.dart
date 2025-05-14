@@ -40,7 +40,10 @@ class Deck implements IDeck {
 
   @override
   IHand evaluate(List<IPlayingCard> cards) {
-    return Hand.solveHand(cards.toPokerCards()).toIHand();
+    final hand = Hand.solveHand(cards.toPokerCards());
+    print(hand.rank);
+
+    return hand.toIHand();
   }
 
   @override
