@@ -3,6 +3,13 @@ import 'package:playing_cards/playing_cards.dart' as playing_cards;
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 
+class Player {
+  final String name;
+  double bankroll;
+
+  Player({required this.name, required this.bankroll});
+}
+
 class UltimateTexasHoldem extends StatefulWidget {
   final uth_deck.IDeck deck;
   const UltimateTexasHoldem({required this.deck, super.key});
@@ -13,7 +20,8 @@ class UltimateTexasHoldem extends StatefulWidget {
 
 class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
   late final uth_deck.IDeck deck;
-  List<uth_deck.IPlayingCard> player1 = [];
+  late Player player1;
+  List<uth_deck.IPlayingCard> player1Cards = [];
   List<uth_deck.IPlayingCard> dealer = [];
   List<uth_deck.IPlayingCard> community = [];
   bool showBacks = true;
@@ -24,50 +32,97 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
   List<String> availableMultipliers = ['4x', '3x'];
   int checkRound = 0;
   bool gameEnded = false;
+  final TextEditingController anteController = TextEditingController(text: '15');
+  double anteAmount = 15;
+  double currentBet = 0;
+  double totalAnteBlind = 0; // Track total ante + blind amount
 
   @override
   void initState() {
     super.initState();
     deck = widget.deck;
+    player1 = Player(name: 'Player 1', bankroll: 1000);
+    selectedBetMultiplier = availableMultipliers.first; // Set initial multiplier
     _dealHands();
   }
 
   void _dealHands() {
+    // Subtract ante and blind before dealing
+    if (player1.bankroll >= (anteAmount * 2)) {
+      setState(() {
+        player1.bankroll -= (anteAmount * 2); // Subtract both ante and blind
+        totalAnteBlind = anteAmount * 2;
+        currentBet = 0;
+      });
+    } else {
+      // Handle insufficient funds
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Insufficient funds for ante and blind'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     deck.shuffle();
-    player1 = deck.draw(2);
+    player1Cards = deck.draw(2);
     dealer = deck.draw(2);
     community = deck.draw(5);
+  }
 
-    setState(() {});
+  void _handleBet() {
+    final betAmount = anteAmount * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1');
+    if (player1.bankroll >= betAmount) {
+      setState(() {
+        player1.bankroll -= betAmount;
+        currentBet = betAmount;
+        gameEnded = true;
+        showBacks = false;
+      });
+      _evaluateHands();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Insufficient funds for bet'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _evaluateHands() {
-    final h1 = deck.evaluate([...community, ...player1]);
+    final h1 = deck.evaluate([...community, ...player1Cards]);
     final h2 = deck.evaluate([...community, ...dealer]);
     final winners = deck.winners([h1, h2]);
 
     setState(() {
       showBacks = false;
-      // store each player's best hand name
       player1Hand = h1.description;
       dealerHand = h2.description;
 
       if (winners.length == 2) {
         result = 'Tie: ${h1.name}';
-      } else if (winners[0] == h1) {
-        result = 'Player 1 wins with ${h1.description}';
+        // Return ante, blind, and bet amount on tie
+        player1.bankroll += totalAnteBlind + currentBet;
       } else {
-        result = 'Dealer wins with ${h2.description}';
+        final winnerCards = winners[0].pokerCards;
+        final player1Cards = h1.pokerCards;
+
+        final isPlayer1Winner = winnerCards
+            .every((card) => player1Cards.any((p1Card) => p1Card.value == card.value && p1Card.suit == card.suit));
+
+        if (isPlayer1Winner) {
+          var winnings = totalAnteBlind + (currentBet * 2);
+          result = 'Player 1 wins $winnings with ${h1.description}';
+          // Return ante, blind, and 2x bet amount on win
+          player1.bankroll += totalAnteBlind + (currentBet * 2);
+        } else {
+          result = 'Dealer wins with ${h2.description}';
+          // No return on loss
+        }
       }
     });
-  }
-
-  void _handleBet() {
-    setState(() {
-      gameEnded = true;
-      showBacks = false; // Show all cards face up
-    });
-    _evaluateHands();
   }
 
   void _handleCheck() {
@@ -100,20 +155,42 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
       // Reset all state variables
       showBacks = true;
       player1Hand = '';
-
       dealerHand = '';
       result = '';
       selectedBetMultiplier = '4x';
       availableMultipliers = ['3x', '4x'];
       checkRound = 0;
       gameEnded = false;
+      currentBet = 0;
 
       // Clear and re deal cards
       community.clear();
-      player1.clear();
+      player1Cards.clear();
       dealer.clear();
+      deck.shuffle();
       _dealHands();
     });
+  }
+
+  @override
+  void dispose() {
+    anteController.dispose();
+    super.dispose();
+  }
+
+  void _updateAnteAmount(String value) {
+    if (value.isEmpty) {
+      setState(() {
+        anteAmount = 0;
+      });
+      return;
+    }
+    final newAmount = double.tryParse(value);
+    if (newAmount != null && newAmount >= 0) {
+      setState(() {
+        anteAmount = newAmount;
+      });
+    }
   }
 
   @override
@@ -122,114 +199,191 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
       appBar: AppBar(
         title: const Text('Texas Hold\'em POC'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Hole cards & best hand
-              Text(
-                'Player 1: $player1Hand',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Row(
-                children: player1
-                    .map((c) => SizedBox(
-                          width: 100,
-                          height: 100 * (89.0 / 64.0),
-                          child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
-                        ))
-                    .toList(),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Dealer: $dealerHand',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Row(
-                children: dealer
-                    .map((c) => SizedBox(
-                          width: 100,
-                          height: 100 * (89.0 / 64.0),
-                          child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
-                        ))
-                    .toList(),
-              ),
-              const SizedBox(height: 24),
-              // Community cards
-              const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: community.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final card = entry.value;
-                  if (gameEnded) {
-                    return SizedBox(
-                      width: 100,
-                      height: 100 * (89.0 / 64.0),
-                      child: playing_cards.PlayingCardView(
-                        card: card.toPlayingCard(),
-                        showBack: false,
-                      ),
-                    );
-                  } else {
-                    return SizedBox(
-                      width: 100,
-                      height: 100 * (89.0 / 64.0),
-                      child: playing_cards.PlayingCardView(
-                        card: card.toPlayingCard(),
-                        showBack: index < 3 ? checkRound < 1 : checkRound < 2,
-                      ),
-                    );
-                  }
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-              // Add these buttons before the Evaluate button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (gameEnded)
-                    ElevatedButton(
-                      onPressed: _resetGame,
-                      child: const Text('Deal Again'),
-                    )
-                  else ...[
-                    ElevatedButton(
-                      onPressed: checkRound < 3 ? _handleCheck : null,
-                      child: Text(checkRound < 2 ? 'Check' : 'Fold'),
+      body: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // Top section - Player info and controls
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bankroll info
+                Text(
+                  '${player1.name}\'s Bankroll: \$${player1.bankroll.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                // Ante controls
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Ante/Blind: \$${anteAmount.toStringAsFixed(2)} each',
+                      style: const TextStyle(fontSize: 14),
                     ),
-                    const SizedBox(width: 16),
-                    DropdownButton<String>(
-                      value: selectedBetMultiplier ?? availableMultipliers.first,
-                      items: availableMultipliers
-                          .map((multiplier) => DropdownMenuItem(
-                                value: multiplier,
-                                child: Text(multiplier),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedBetMultiplier = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    ElevatedButton(
-                      onPressed: _handleBet,
-                      child: const Text('Bet'),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 80,
+                          child: TextField(
+                            controller: anteController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Ante/Blind',
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            ),
+                            onChanged: _updateAnteAmount,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_upward, size: 20),
+                          onPressed: () {
+                            final newAmount = anteAmount + 1;
+                            anteController.text = newAmount.toString();
+                            _updateAnteAmount(newAmount.toString());
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_downward, size: 20),
+                          onPressed: () {
+                            if (anteAmount > 0) {
+                              final newAmount = anteAmount - 1;
+                              anteController.text = newAmount.toString();
+                              _updateAnteAmount(newAmount.toString());
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ],
-                ],
-              ),
-              if (result.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(result, style: const TextStyle(fontSize: 16)),
+                ),
               ],
-            ],
-          ),
+            ),
+            const SizedBox(height: 4),
+
+            // Dealer cards
+            Column(
+              children: [
+                Text(
+                  'Dealer: $dealerHand',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: dealer
+                      .map((c) => SizedBox(
+                            width: 70,
+                            height: 70 * (89.0 / 64.0),
+                            child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
+
+            // Community cards
+            Column(
+              children: [
+                const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: community.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final card = entry.value;
+                    if (gameEnded) {
+                      return SizedBox(
+                        width: 70,
+                        height: 70 * (89.0 / 64.0),
+                        child: playing_cards.PlayingCardView(
+                          card: card.toPlayingCard(),
+                          showBack: false,
+                        ),
+                      );
+                    } else {
+                      return SizedBox(
+                        width: 70,
+                        height: 70 * (89.0 / 64.0),
+                        child: playing_cards.PlayingCardView(
+                          card: card.toPlayingCard(),
+                          showBack: index < 3 ? checkRound < 1 : checkRound < 2,
+                        ),
+                      );
+                    }
+                  }).toList(),
+                ),
+              ],
+            ),
+
+            // Player cards
+            Column(
+              children: [
+                Text(
+                  'Player 1: $player1Hand',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: player1Cards
+                      .map((c) => SizedBox(
+                            width: 70,
+                            height: 70 * (89.0 / 64.0),
+                            child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
+
+            // Game controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (gameEnded)
+                  ElevatedButton(
+                    onPressed: _resetGame,
+                    child: const Text('Deal Again'),
+                  )
+                else ...[
+                  ElevatedButton(
+                    onPressed: checkRound < 3 ? _handleCheck : null,
+                    child: Text(checkRound < 2 ? 'Check' : 'Fold'),
+                  ),
+                  const SizedBox(width: 8),
+                  DropdownButton<String>(
+                    value: selectedBetMultiplier ?? availableMultipliers.first,
+                    items: availableMultipliers
+                        .map((multiplier) => DropdownMenuItem(
+                              value: multiplier,
+                              child: Text(multiplier),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedBetMultiplier = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _handleBet,
+                    child: Text('Bet ${anteAmount * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1')}'),
+                  ),
+                ],
+              ],
+            ),
+
+            // Result
+            if (result.isNotEmpty)
+              Text(
+                result,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+          ],
         ),
       ),
     );

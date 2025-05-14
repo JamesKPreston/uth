@@ -16,6 +16,7 @@ class Deck implements IDeck {
 
   @override
   void shuffle() {
+    _cards = standardFiftyTwoCardDeck().toIPlayingCard();
     _cards.shuffle(Random());
   }
 
