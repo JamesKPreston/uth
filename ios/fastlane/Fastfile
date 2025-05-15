@@ -1,0 +1,25 @@
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build the iOS app"
+  lane :build do
+    match(
+      type: "adhoc", 
+      app_identifier: "com.dxsolo.ultimateTexasHoldemPoc" , 
+      readonly: is_ci, 
+      git_url: "git@github.com:JamesKPreston/uth_fastlane_match.git")
+    build_ios_app(
+      scheme: "Runner", # by default Flutter projects scheme is called Runner,
+  )
+  end
+  desc "Build and distribute iOS app"
+  lane :distribute_ios do
+    build
+    firebase_app_distribution(
+      app: "1:100000000000:ios:0000000000000000000000",
+      groups: "dev",
+      release_notes: "Hello World from Fastlane",
+    )
+  end
+end
