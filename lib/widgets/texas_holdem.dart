@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:playing_cards/playing_cards.dart' as playing_cards;
 import 'package:ultimate_texas_holdem_poc/bets/ante.dart';
+import 'package:ultimate_texas_holdem_poc/bets/blind.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 
@@ -25,6 +26,8 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
   List<uth_deck.IPlayingCard> player1Cards = [];
   List<uth_deck.IPlayingCard> dealer = [];
   List<uth_deck.IPlayingCard> community = [];
+  List<PlayingCardWrapper> tempPlayer = [];
+  List<PlayingCardWrapper> tempDealer = [];
   bool showBacks = true;
   String? player1Hand = '';
   String? dealerHand = '';
@@ -93,8 +96,31 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
   }
 
   void _evaluateHands() {
-    final h1 = deck.evaluate([...community, ...player1Cards]);
-    final h2 = deck.evaluate([...community, ...dealer]);
+    // Hardcoded player hand: Flush (e.g., all hearts)
+    tempPlayer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.ace)));
+    tempPlayer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.king)));
+    tempPlayer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.queen)));
+    tempPlayer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.jack)));
+    tempPlayer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.nine)));
+
+    tempDealer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.spades, playing_cards.CardValue.eight)));
+    tempDealer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.diamonds, playing_cards.CardValue.eight)));
+    tempDealer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.clubs, playing_cards.CardValue.four)));
+    tempDealer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.jack)));
+    tempDealer
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.clubs, playing_cards.CardValue.two)));
+
+    var h1 = deck.evaluate([...community, ...player1Cards]);
+    var h2 = deck.evaluate([...community, ...dealer]);
     final winners = deck.winners([h1, h2]);
 
     setState(() {
@@ -114,8 +140,11 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
             .every((card) => player1Cards.any((p1Card) => p1Card.value == card.value && p1Card.suit == card.suit));
 
         if (isPlayer1Winner) {
-          var ante = Ante().payout(h2, totalAnteBlind / 2) + (totalAnteBlind / 2);
-          var winnings = ante + (currentBet * 2);
+          // h1 = deck.evaluate(tempPlayer);
+          // h2 = deck.evaluate(tempDealer);
+          var ante = Ante().payout(h2, totalAnteBlind / 2);
+          var blind = Blind().payout(h1, totalAnteBlind / 2);
+          var winnings = ante + blind + (currentBet * 2);
           result = 'Player 1 wins $winnings with ${h1.description}';
           // Return ante, blind, and 2x bet amount on win
           player1.bankroll += totalAnteBlind + (currentBet * 2);

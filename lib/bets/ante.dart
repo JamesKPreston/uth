@@ -12,7 +12,7 @@ class Ante implements IBet {
   double payout(IHand hand, double betAmount) {
     if (doesQualify(hand)) {
       // Player wins, dealer qualifies: pays 1:1
-      return betAmount * 2;
+      return betAmount + (betAmount * 1 / 1);
     } else {
       // Player wins, dealer does not qualify: push (return original bet)
       return betAmount;
