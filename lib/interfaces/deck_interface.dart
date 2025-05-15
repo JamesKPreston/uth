@@ -1,9 +1,5 @@
 import 'package:ultimate_texas_holdem_poc/interfaces/hand_interface.dart';
-
-abstract class IPlayingCard {
-  Suit get suit;
-  CardValue get value;
-}
+import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 
 abstract class IDeck {
   List<IPlayingCard> draw(int count);
@@ -12,7 +8,3 @@ abstract class IDeck {
   IHand evaluate(List<IPlayingCard> cards);
   List<IHand> winners(List<IHand> hands);
 }
-
-enum Suit { clubs, diamonds, hearts, spades }
-
-enum CardValue { two, three, four, five, six, seven, eight, nine, ten, jack, queen, king, ace }

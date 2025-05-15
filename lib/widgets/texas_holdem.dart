@@ -3,6 +3,7 @@ import 'package:playing_cards/playing_cards.dart' as playing_cards;
 import 'package:ultimate_texas_holdem_poc/bets/ante.dart';
 import 'package:ultimate_texas_holdem_poc/bets/blind.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
+import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 
 class Player {
@@ -23,9 +24,9 @@ class UltimateTexasHoldem extends StatefulWidget {
 class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
   late final uth_deck.IDeck deck;
   late Player player1;
-  List<uth_deck.IPlayingCard> player1Cards = [];
-  List<uth_deck.IPlayingCard> dealer = [];
-  List<uth_deck.IPlayingCard> community = [];
+  List<IPlayingCard> player1Cards = [];
+  List<IPlayingCard> dealer = [];
+  List<IPlayingCard> community = [];
   List<PlayingCardWrapper> tempPlayer = [];
   List<PlayingCardWrapper> tempDealer = [];
   bool showBacks = true;

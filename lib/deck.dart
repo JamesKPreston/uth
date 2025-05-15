@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/hand_interface.dart';
+import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 import 'package:ultimate_texas_holdem_poc/wrapper/hand_wrapper.dart';
 
