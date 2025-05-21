@@ -25,4 +25,7 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 flutter:
+  assets:
+    - assets/red_chip.png
+
   uses-material-design: true
