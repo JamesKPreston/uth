@@ -229,288 +229,211 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
     }
   }
 
-  bool chipDropped = false; // Track whether the chip is dropped
-  Offset chipPosition = Offset(0, 0); // Track the position of the chip in the target
-  bool isInsideTarget = false; // Track if the chip is inside the drag target area
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Poker Chip Drag and Drop'),
+        title: const Text('Texas Hold\'em POC'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(8),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Draggable Poker Chip
-            if (!chipDropped)
-              Draggable(
-                data: 'poker_chip',
-                feedback: Material(
-                  color: Colors.transparent,
-                  child: Image.asset('assets/red_chip.png', width: 100),
+            // Top section - Player info and controls
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bankroll info
+                Text(
+                  '${player1.name}\'s Bankroll: \$${player1.bankroll.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                childWhenDragging: Container(),
-                onDraggableCanceled: (velocity, offset) {
-                  // Handle cancellation of dragging (e.g., chip dragged outside)
-                  setState(() {
-                    // If chip is inside the target area when released, mark as dropped
-                    if (isInsideTarget) {
-                      chipDropped = true;
-                      chipPosition = offset; // Place the chip where it was released
-                    } else {
-                      chipDropped = false;
-                    }
-                  });
-                },
-                child: Image.asset('assets/red_chip.png', width: 100),
-              ),
-            // Drop Target
-            DragTarget<String>(
-              onWillAcceptWithDetails: (details) {
-                // Check if chip is inside the drag target area
-                RenderBox targetBox = context.findRenderObject() as RenderBox;
-                final targetPosition = targetBox.localToGlobal(Offset.zero);
-                final targetSize = targetBox.size;
-                final chipOffset = details.offset;
-
-                // Determine if the chip is inside the target bounds
-                isInsideTarget = targetPosition.dx <= chipOffset.dx &&
-                    chipOffset.dx <= targetPosition.dx + targetSize.width &&
-                    targetPosition.dy <= chipOffset.dy &&
-                    chipOffset.dy <= targetPosition.dy + targetSize.height;
-                return isInsideTarget; // Accept the drop if inside target area
-              },
-              onAcceptWithDetails: (details) {
-                setState(() {
-                  chipDropped = true;
-                  chipPosition = Offset(0, 0); // Center the chip in the target
-                });
-              },
-              builder: (context, candidateData, rejectedData) {
-                return Stack(
-                  alignment: Alignment.center,
+                const SizedBox(height: 4),
+                // Ante controls
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: 150,
-                      height: 150,
-                      color: Colors.blue,
-                      child: Center(
-                        child: chipDropped
-                            ? Image.asset('assets/red_chip.png', width: 100)
-                            : (candidateData.isEmpty ? const Text('Drop Here!') : const Text('Dropped!')),
-                      ),
+                    Text(
+                      'Ante/Blind: \$${anteAmount.toStringAsFixed(2)} each',
+                      style: const TextStyle(fontSize: 14),
                     ),
-                    // if (chipDropped)
-                    //   Positioned(
-                    //     left: chipPosition.dx,
-                    //     top: chipPosition.dy,
-                    //     child: Image.asset('assets/red_chip.png', width: 100),
-                    //   ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 80,
+                          // INSERT_YOUR_CODE
+                          child: DragTarget<String>(
+                            onWillAcceptWithDetails: (details) => true,
+                            onAcceptWithDetails: (details) {
+                              double newAmount = 0;
+                              switch (details.data) {
+                                case 'red_chip':
+                                  newAmount = 5;
+                                  break;
+                                case 'green_chip':
+                                  newAmount = 25;
+                                  break;
+                              }
+                              newAmount = anteAmount + newAmount;
+                              anteController.text = newAmount.toString();
+                              _updateAnteAmount(newAmount.toString());
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              return TextField(
+                                controller: anteController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Ante/Blind',
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                ),
+                                onChanged: _updateAnteAmount,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    LongPressDraggable<String>(
+                      data: 'red_chip',
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: Image.asset('assets/red_chip.png', width: 50),
+                      ),
+                      childWhenDragging: Container(),
+                      child: Image.asset('assets/red_chip.png', width: 50),
+                    ),
+                    // Image.asset('assets/red_chip.png', width: 50, height: 50),
                   ],
-                );
-              },
+                ),
+              ],
             ),
+            const SizedBox(height: 4),
+
+            // Dealer cards
+            Column(
+              children: [
+                Text(
+                  'Dealer: $dealerHand',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: dealer
+                      .map((c) => SizedBox(
+                            width: 70,
+                            height: 70 * (89.0 / 64.0),
+                            child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
+
+            // Community cards
+            Column(
+              children: [
+                const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: community.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final card = entry.value;
+                    if (gameEnded) {
+                      return SizedBox(
+                        width: 70,
+                        height: 70 * (89.0 / 64.0),
+                        child: playing_cards.PlayingCardView(
+                          card: card.toPlayingCard(),
+                          showBack: false,
+                        ),
+                      );
+                    } else {
+                      return SizedBox(
+                        width: 70,
+                        height: 70 * (89.0 / 64.0),
+                        child: playing_cards.PlayingCardView(
+                          card: card.toPlayingCard(),
+                          showBack: index < 3 ? checkRound < 1 : checkRound < 2,
+                        ),
+                      );
+                    }
+                  }).toList(),
+                ),
+              ],
+            ),
+
+            // Player cards
+            Column(
+              children: [
+                Text(
+                  'Player 1: $player1Hand',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: player1Cards
+                      .map((c) => SizedBox(
+                            width: 70,
+                            height: 70 * (89.0 / 64.0),
+                            child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
+
+            // Game controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (gameEnded)
+                  ElevatedButton(
+                    onPressed: _resetGame,
+                    child: const Text('Deal Again'),
+                  )
+                else ...[
+                  ElevatedButton(
+                    onPressed: checkRound < 3 ? _handleCheck : null,
+                    child: Text(checkRound < 2 ? 'Check' : 'Fold'),
+                  ),
+                  const SizedBox(width: 8),
+                  DropdownButton<String>(
+                    value: selectedBetMultiplier ?? availableMultipliers.first,
+                    items: availableMultipliers
+                        .map((multiplier) => DropdownMenuItem(
+                              value: multiplier,
+                              child: Text(multiplier),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedBetMultiplier = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _handleBet,
+                    child: Text('Bet ${anteAmount * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1')}'),
+                  ),
+                ],
+              ],
+            ),
+
+            // Result
+            if (result.isNotEmpty)
+              Text(
+                result,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),
     );
   }
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       title: const Text('Texas Hold\'em POC'),
-  //     ),
-  //     body: Padding(
-  //       padding: const EdgeInsets.all(8),
-  //       child: Column(
-  //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //         children: [
-  //           // Top section - Player info and controls
-  //           Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               // Bankroll info
-  //               Text(
-  //                 '${player1.name}\'s Bankroll: \$${player1.bankroll.toStringAsFixed(2)}',
-  //                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  //               ),
-  //               const SizedBox(height: 4),
-  //               // Ante controls
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                 children: [
-  //                   Text(
-  //                     'Ante/Blind: \$${anteAmount.toStringAsFixed(2)} each',
-  //                     style: const TextStyle(fontSize: 14),
-  //                   ),
-  //                   Row(
-  //                     children: [
-  //                       SizedBox(
-  //                         width: 80,
-  //                         child: TextField(
-  //                           controller: anteController,
-  //                           keyboardType: TextInputType.number,
-  //                           decoration: const InputDecoration(
-  //                             labelText: 'Ante/Blind',
-  //                             isDense: true,
-  //                             contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-  //                           ),
-  //                           onChanged: _updateAnteAmount,
-  //                         ),
-  //                       ),
-  //                       IconButton(
-  //                         icon: const Icon(Icons.arrow_upward, size: 20),
-  //                         onPressed: () {
-  //                           final newAmount = anteAmount + 1;
-  //                           anteController.text = newAmount.toString();
-  //                           _updateAnteAmount(newAmount.toString());
-  //                         },
-  //                       ),
-  //                       IconButton(
-  //                         icon: const Icon(Icons.arrow_downward, size: 20),
-  //                         onPressed: () {
-  //                           if (anteAmount > 0) {
-  //                             final newAmount = anteAmount - 1;
-  //                             anteController.text = newAmount.toString();
-  //                             _updateAnteAmount(newAmount.toString());
-  //                           }
-  //                         },
-  //                       ),
-  //                     ],
-  //                   ),
-  //                   Image.asset('assets/red_chip.png', width: 50, height: 50),
-  //                 ],
-  //               ),
-  //             ],
-  //           ),
-  //           const SizedBox(height: 4),
-
-  //           // Dealer cards
-  //           Column(
-  //             children: [
-  //               Text(
-  //                 'Dealer: $dealerHand',
-  //                 style: const TextStyle(fontWeight: FontWeight.bold),
-  //               ),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.center,
-  //                 children: dealer
-  //                     .map((c) => SizedBox(
-  //                           width: 70,
-  //                           height: 70 * (89.0 / 64.0),
-  //                           child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
-  //                         ))
-  //                     .toList(),
-  //               ),
-  //             ],
-  //           ),
-
-  //           // Community cards
-  //           Column(
-  //             children: [
-  //               const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
-  //               Wrap(
-  //                 alignment: WrapAlignment.center,
-  //                 spacing: 4,
-  //                 runSpacing: 4,
-  //                 children: community.asMap().entries.map((entry) {
-  //                   final index = entry.key;
-  //                   final card = entry.value;
-  //                   if (gameEnded) {
-  //                     return SizedBox(
-  //                       width: 70,
-  //                       height: 70 * (89.0 / 64.0),
-  //                       child: playing_cards.PlayingCardView(
-  //                         card: card.toPlayingCard(),
-  //                         showBack: false,
-  //                       ),
-  //                     );
-  //                   } else {
-  //                     return SizedBox(
-  //                       width: 70,
-  //                       height: 70 * (89.0 / 64.0),
-  //                       child: playing_cards.PlayingCardView(
-  //                         card: card.toPlayingCard(),
-  //                         showBack: index < 3 ? checkRound < 1 : checkRound < 2,
-  //                       ),
-  //                     );
-  //                   }
-  //                 }).toList(),
-  //               ),
-  //             ],
-  //           ),
-
-  //           // Player cards
-  //           Column(
-  //             children: [
-  //               Text(
-  //                 'Player 1: $player1Hand',
-  //                 style: const TextStyle(fontWeight: FontWeight.bold),
-  //               ),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.center,
-  //                 children: player1Cards
-  //                     .map((c) => SizedBox(
-  //                           width: 70,
-  //                           height: 70 * (89.0 / 64.0),
-  //                           child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
-  //                         ))
-  //                     .toList(),
-  //               ),
-  //             ],
-  //           ),
-
-  //           // Game controls
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               if (gameEnded)
-  //                 ElevatedButton(
-  //                   onPressed: _resetGame,
-  //                   child: const Text('Deal Again'),
-  //                 )
-  //               else ...[
-  //                 ElevatedButton(
-  //                   onPressed: checkRound < 3 ? _handleCheck : null,
-  //                   child: Text(checkRound < 2 ? 'Check' : 'Fold'),
-  //                 ),
-  //                 const SizedBox(width: 8),
-  //                 DropdownButton<String>(
-  //                   value: selectedBetMultiplier ?? availableMultipliers.first,
-  //                   items: availableMultipliers
-  //                       .map((multiplier) => DropdownMenuItem(
-  //                             value: multiplier,
-  //                             child: Text(multiplier),
-  //                           ))
-  //                       .toList(),
-  //                   onChanged: (value) {
-  //                     setState(() {
-  //                       selectedBetMultiplier = value;
-  //                     });
-  //                   },
-  //                 ),
-  //                 const SizedBox(width: 8),
-  //                 ElevatedButton(
-  //                   onPressed: _handleBet,
-  //                   child: Text('Bet ${anteAmount * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1')}'),
-  //                 ),
-  //               ],
-  //             ],
-  //           ),
-
-  //           // Result
-  //           if (result.isNotEmpty)
-  //             Text(
-  //               result,
-  //               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-  //               textAlign: TextAlign.center,
-  //             ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 }
