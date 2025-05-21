@@ -295,7 +295,7 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
                         ),
                       ],
                     ),
-                    LongPressDraggable<String>(
+                    Draggable<String>(
                       data: 'red_chip',
                       feedback: Material(
                         color: Colors.transparent,
