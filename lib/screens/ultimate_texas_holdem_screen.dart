@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:playing_cards/playing_cards.dart' as playing_cards;
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/card_place_holder_widget.dart';
@@ -24,7 +23,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   List<IPlayingCard> community = [];
   List<PlayingCardWrapper> tempPlayer = [];
   List<PlayingCardWrapper> tempDealer = [];
-  bool showBacks = true;
+  bool showBacks = false;
   String? player1Hand = '';
   String? dealerHand = '';
   String result = '';
@@ -63,96 +62,96 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 12),
-                // Dealer cards
-                Column(
-                  children: [
-                    Text(
-                      'Dealer: $dealerHand',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: dealer
-                          .map((c) => SizedBox(
-                                width: 70,
-                                height: 70 * (89.0 / 64.0),
-                                child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
-                              ))
-                          .toList(),
-                    ),
-                  ],
-                ),
+                // // Dealer cards
+                // Column(
+                //   children: [
+                //     Text(
+                //       'Dealer: $dealerHand',
+                //       style: const TextStyle(fontWeight: FontWeight.bold),
+                //     ),
+                //     Row(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: dealer
+                //           .map((c) => SizedBox(
+                //                 width: 70,
+                //                 height: 70 * (89.0 / 64.0),
+                //                 child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
+                //               ))
+                //           .toList(),
+                //     ),
+                //   ],
+                // ),
 
-                // Community cards
-                Column(
-                  children: [
-                    const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: community.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final card = entry.value;
-                        if (gameEnded) {
-                          return SizedBox(
-                            width: 70,
-                            height: 70 * (89.0 / 64.0),
-                            child: playing_cards.PlayingCardView(
-                              card: card.toPlayingCard(),
-                              showBack: false,
-                            ),
-                          );
-                        } else {
-                          return SizedBox(
-                            width: 70,
-                            height: 70 * (89.0 / 64.0),
-                            child: playing_cards.PlayingCardView(
-                              card: card.toPlayingCard(),
-                              showBack: index < 3 ? checkRound < 1 : checkRound < 2,
-                            ),
-                          );
-                        }
-                      }).toList(),
-                    ),
-                  ],
-                ),
+                // // Community cards
+                // Column(
+                //   children: [
+                //     const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
+                //     Wrap(
+                //       alignment: WrapAlignment.center,
+                //       spacing: 4,
+                //       runSpacing: 4,
+                //       children: community.asMap().entries.map((entry) {
+                //         final index = entry.key;
+                //         final card = entry.value;
+                //         if (gameEnded) {
+                //           return SizedBox(
+                //             width: 70,
+                //             height: 70 * (89.0 / 64.0),
+                //             child: playing_cards.PlayingCardView(
+                //               card: card.toPlayingCard(),
+                //               showBack: false,
+                //             ),
+                //           );
+                //         } else {
+                //           return SizedBox(
+                //             width: 70,
+                //             height: 70 * (89.0 / 64.0),
+                //             child: playing_cards.PlayingCardView(
+                //               card: card.toPlayingCard(),
+                //               showBack: index < 3 ? checkRound < 1 : checkRound < 2,
+                //             ),
+                //           );
+                //         }
+                //       }).toList(),
+                //     ),
+                //   ],
+                // ),
 
-                // Player cards
-                Column(
-                  children: [
-                    Text(
-                      'Player 1: $player1Hand',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: player1Cards
-                          .map((c) => SizedBox(
-                                width: 70,
-                                height: 70 * (89.0 / 64.0),
-                                child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
-                              ))
-                          .toList(),
-                    ),
-                  ],
-                ),
+                // // Player cards
+                // Column(
+                //   children: [
+                //     Text(
+                //       'Player 1: $player1Hand',
+                //       style: const TextStyle(fontWeight: FontWeight.bold),
+                //     ),
+                //     Row(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: player1Cards
+                //           .map((c) => SizedBox(
+                //                 width: 70,
+                //                 height: 70 * (89.0 / 64.0),
+                //                 child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
+                //               ))
+                //           .toList(),
+                //     ),
+                //   ],
+                // ),
 
                 // CARDS ROW
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Dealer cards
-                    const Column(
+                    Column(
                       children: [
                         Row(
                           children: [
-                            CardPlaceholder(),
-                            CardPlaceholder(),
+                            CardPlaceholder(card: dealer[0], showBack: showBacks),
+                            CardPlaceholder(card: dealer[1], showBack: showBacks),
                           ],
                         ),
-                        SizedBox(height: 4),
-                        Text('Dealer', style: TextStyle(color: Colors.white)),
+                        const SizedBox(height: 4),
+                        const Text('Dealer', style: TextStyle(color: Colors.white)),
                       ],
                     ),
                     // Community cards
@@ -164,21 +163,21 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         ),
                         const SizedBox(height: 8),
                         Row(
-                          children: List.generate(5, (_) => const CardPlaceholder()),
+                          children: List.generate(5, (x) => CardPlaceholder(card: community[x], showBack: showBacks)),
                         ),
                       ],
                     ),
                     // Player cards
-                    const Column(
+                    Column(
                       children: [
                         Row(
                           children: [
-                            CardPlaceholder(),
-                            CardPlaceholder(),
+                            CardPlaceholder(card: player1Cards[0], showBack: showBacks),
+                            CardPlaceholder(card: player1Cards[1], showBack: showBacks),
                           ],
                         ),
-                        SizedBox(height: 4),
-                        Text('Player', style: TextStyle(color: Colors.white)),
+                        const SizedBox(height: 4),
+                        const Text('Player', style: TextStyle(color: Colors.white)),
                       ],
                     ),
                   ],
