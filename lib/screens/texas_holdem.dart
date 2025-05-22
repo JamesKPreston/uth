@@ -6,13 +6,7 @@ import 'package:ultimate_texas_holdem_poc/bets/trips.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
-
-class Player {
-  final String name;
-  double bankroll;
-
-  Player({required this.name, required this.bankroll});
-}
+import 'package:ultimate_texas_holdem_poc/player.dart';
 
 class UltimateTexasHoldem extends StatefulWidget {
   final uth_deck.IDeck deck;
