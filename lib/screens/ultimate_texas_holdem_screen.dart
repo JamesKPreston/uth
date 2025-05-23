@@ -6,6 +6,7 @@ import 'package:ultimate_texas_holdem_poc/widgets/bet_circle_widget.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/payout_column_widget.dart';
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
 import 'package:ultimate_texas_holdem_poc/player.dart';
+import 'package:ultimate_texas_holdem_poc/widgets/chip_widget.dart';
 
 class UltimateTexasHoldemScreen extends StatefulWidget {
   final uth_deck.IDeck deck;
@@ -36,6 +37,9 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   double currentBet = 0;
   double totalAnteBlind = 0; // Track total ante + blind amount
   double trips = 5;
+  BetCircle tripsCircle = const BetCircle(label: 'TRIPS');
+  BetCircle anteCircle = const BetCircle(label: 'ANTE');
+  BetCircle blindCircle = const BetCircle(label: 'BLIND');
   @override
   void initState() {
     super.initState();
@@ -62,81 +66,116 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 12),
-                // // Dealer cards
-                // Column(
-                //   children: [
-                //     Text(
-                //       'Dealer: $dealerHand',
-                //       style: const TextStyle(fontWeight: FontWeight.bold),
-                //     ),
-                //     Row(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: dealer
-                //           .map((c) => SizedBox(
-                //                 width: 70,
-                //                 height: 70 * (89.0 / 64.0),
-                //                 child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: showBacks),
-                //               ))
-                //           .toList(),
-                //     ),
-                //   ],
-                // ),
-
-                // // Community cards
-                // Column(
-                //   children: [
-                //     const Text('Community Cards:', style: TextStyle(fontWeight: FontWeight.bold)),
-                //     Wrap(
-                //       alignment: WrapAlignment.center,
-                //       spacing: 4,
-                //       runSpacing: 4,
-                //       children: community.asMap().entries.map((entry) {
-                //         final index = entry.key;
-                //         final card = entry.value;
-                //         if (gameEnded) {
-                //           return SizedBox(
-                //             width: 70,
-                //             height: 70 * (89.0 / 64.0),
-                //             child: playing_cards.PlayingCardView(
-                //               card: card.toPlayingCard(),
-                //               showBack: false,
-                //             ),
-                //           );
-                //         } else {
-                //           return SizedBox(
-                //             width: 70,
-                //             height: 70 * (89.0 / 64.0),
-                //             child: playing_cards.PlayingCardView(
-                //               card: card.toPlayingCard(),
-                //               showBack: index < 3 ? checkRound < 1 : checkRound < 2,
-                //             ),
-                //           );
-                //         }
-                //       }).toList(),
-                //     ),
-                //   ],
-                // ),
-
-                // // Player cards
-                // Column(
-                //   children: [
-                //     Text(
-                //       'Player 1: $player1Hand',
-                //       style: const TextStyle(fontWeight: FontWeight.bold),
-                //     ),
-                //     Row(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: player1Cards
-                //           .map((c) => SizedBox(
-                //                 width: 70,
-                //                 height: 70 * (89.0 / 64.0),
-                //                 child: playing_cards.PlayingCardView(card: c.toPlayingCard(), showBack: false),
-                //               ))
-                //           .toList(),
-                //     ),
-                //   ],
-                // ),
-
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Draggable(
+                      data: 1.0,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(
+                          value: 1,
+                          imageType: ChipImageType.white,
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(
+                          value: 1,
+                          imageType: ChipImageType.white,
+                        ),
+                      ),
+                      child: ChipWidget(
+                        value: 1,
+                        imageType: ChipImageType.white,
+                      ),
+                    ),
+                    Draggable(
+                      data: 5.0,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(
+                          value: 5,
+                          imageType: ChipImageType.red,
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(
+                          value: 5,
+                          imageType: ChipImageType.red,
+                        ),
+                      ),
+                      child: ChipWidget(
+                        value: 5,
+                        imageType: ChipImageType.red,
+                      ),
+                    ),
+                    Draggable(
+                      data: 10.0,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(
+                          value: 10,
+                          imageType: ChipImageType.ten,
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(
+                          value: 10,
+                          imageType: ChipImageType.ten,
+                        ),
+                      ),
+                      child: ChipWidget(
+                        value: 10,
+                        imageType: ChipImageType.ten,
+                      ),
+                    ),
+                    Draggable(
+                      data: 25.0,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(
+                          value: 25,
+                          imageType: ChipImageType.green,
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(
+                          value: 25,
+                          imageType: ChipImageType.green,
+                        ),
+                      ),
+                      child: ChipWidget(
+                        value: 25,
+                        imageType: ChipImageType.green,
+                      ),
+                    ),
+                    Draggable(
+                      data: 100.0,
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(
+                          value: 100,
+                          imageType: ChipImageType.black,
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(
+                          value: 100,
+                          imageType: ChipImageType.black,
+                        ),
+                      ),
+                      child: ChipWidget(
+                        value: 100,
+                        imageType: ChipImageType.black,
+                      ),
+                    ),
+                  ],
+                ),
                 // CARDS ROW
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -186,12 +225,12 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                 const SizedBox(height: 8),
 
                 // CENTER BET SPOTS
-                const Column(
+                Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        PayoutColumn(
+                        const PayoutColumn(
                           title: 'TRIPS',
                           payouts: {
                             'Royal Flush': '50 to 1',
@@ -203,20 +242,48 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                             'Trips': '3 to 1',
                           },
                         ),
-                        SizedBox(width: 12),
-                        BetCircle(label: 'TRIPS'),
+                        const SizedBox(width: 12),
+                        DragTarget<double>(
+                          onWillAcceptWithDetails: (details) => true,
+                          onAcceptWithDetails: (details) {
+                            tripsCircle =
+                                BetCircle(label: 'TRIPS', chipWidget: tripsCircle.buildChipWidget(details.data));
+                          },
+                          builder: (context, candidateData, rejectedData) {
+                            return tripsCircle;
+                          },
+                        ),
+                        //const BetCircle(label: 'TRIPS'),
                         // Center betting circles
                         Row(
                           children: [
-                            SizedBox(width: 150),
-                            BetCircle(label: 'ANTE'),
-                            SizedBox(width: 20),
-                            BetCircle(label: 'BLIND'),
-                            SizedBox(width: 150),
+                            const SizedBox(width: 150),
+                            DragTarget<double>(
+                              onWillAcceptWithDetails: (details) => true,
+                              onAcceptWithDetails: (details) {
+                                anteCircle =
+                                    BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
+                              },
+                              builder: (context, candidateData, rejectedData) {
+                                return anteCircle;
+                              },
+                            ),
+                            const SizedBox(width: 20),
+                            DragTarget<double>(
+                              onWillAcceptWithDetails: (details) => true,
+                              onAcceptWithDetails: (details) {
+                                blindCircle =
+                                    BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
+                              },
+                              builder: (context, candidateData, rejectedData) {
+                                return blindCircle;
+                              },
+                            ),
+                            const SizedBox(width: 150),
                           ],
                         ),
                         // Right side with BLIND payout
-                        PayoutColumn(
+                        const PayoutColumn(
                           title: 'BLIND',
                           payouts: {
                             'Royal Flush': '500 to 1',
@@ -228,7 +295,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         ),
                       ],
                     ),
-                    BetCircle(label: 'PLAY'),
+                    const BetCircle(label: 'PLAY'),
                   ],
                 ),
 
