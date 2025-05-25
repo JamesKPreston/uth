@@ -12,23 +12,9 @@ class BetCircle extends StatelessWidget {
   });
   // Add import for ChipImageType and ChipWidget if needed, but omitted here per instructions.
   ChipWidget? buildChipWidget(double value) {
-    ChipImageType? imageType;
-    if (value == 1) {
-      imageType = ChipImageType.white;
-    } else if (value < 10) {
-      imageType = ChipImageType.red;
-    } else if (value < 25) {
-      imageType = ChipImageType.ten;
-    } else if (value < 100) {
-      imageType = ChipImageType.green;
-    } else if (value < 1000) {
-      imageType = ChipImageType.black;
-    } else {
-      imageType = null;
-    }
-
-    if (imageType != null) {
-      return ChipWidget(value: value, imageType: imageType);
+    if (value > 0) {
+      value = value + (chipWidget != null ? chipWidget!.value : 0);
+      return ChipWidget(value: value);
     } else {
       return null;
     }

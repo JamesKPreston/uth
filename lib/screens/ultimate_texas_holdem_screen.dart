@@ -24,7 +24,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   List<IPlayingCard> community = [];
   List<PlayingCardWrapper> tempPlayer = [];
   List<PlayingCardWrapper> tempDealer = [];
-  bool showBacks = false;
+  bool showBacks = true;
   String? player1Hand = '';
   String? dealerHand = '';
   String result = '';
@@ -36,7 +36,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   double anteAmount = 15;
   double currentBet = 0;
   double totalAnteBlind = 0; // Track total ante + blind amount
-  double trips = 5;
+  double trips = 0;
   BetCircle tripsCircle = const BetCircle(label: 'TRIPS');
   BetCircle anteCircle = const BetCircle(label: 'ANTE');
   BetCircle blindCircle = const BetCircle(label: 'BLIND');
@@ -73,21 +73,14 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       data: 1.0,
                       feedback: Material(
                         color: Colors.transparent,
-                        child: ChipWidget(
-                          value: 1,
-                          imageType: ChipImageType.white,
-                        ),
+                        child: ChipWidget(value: 1),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
-                        child: ChipWidget(
-                          value: 1,
-                          imageType: ChipImageType.white,
-                        ),
+                        child: ChipWidget(value: 1),
                       ),
                       child: ChipWidget(
                         value: 1,
-                        imageType: ChipImageType.white,
                       ),
                     ),
                     Draggable(
@@ -96,19 +89,16 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         color: Colors.transparent,
                         child: ChipWidget(
                           value: 5,
-                          imageType: ChipImageType.red,
                         ),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
                         child: ChipWidget(
                           value: 5,
-                          imageType: ChipImageType.red,
                         ),
                       ),
                       child: ChipWidget(
                         value: 5,
-                        imageType: ChipImageType.red,
                       ),
                     ),
                     Draggable(
@@ -117,19 +107,16 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         color: Colors.transparent,
                         child: ChipWidget(
                           value: 10,
-                          imageType: ChipImageType.ten,
                         ),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
                         child: ChipWidget(
                           value: 10,
-                          imageType: ChipImageType.ten,
                         ),
                       ),
                       child: ChipWidget(
                         value: 10,
-                        imageType: ChipImageType.ten,
                       ),
                     ),
                     Draggable(
@@ -138,19 +125,16 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         color: Colors.transparent,
                         child: ChipWidget(
                           value: 25,
-                          imageType: ChipImageType.green,
                         ),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
                         child: ChipWidget(
                           value: 25,
-                          imageType: ChipImageType.green,
                         ),
                       ),
                       child: ChipWidget(
                         value: 25,
-                        imageType: ChipImageType.green,
                       ),
                     ),
                     Draggable(
@@ -159,19 +143,16 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         color: Colors.transparent,
                         child: ChipWidget(
                           value: 100,
-                          imageType: ChipImageType.black,
                         ),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
                         child: ChipWidget(
                           value: 100,
-                          imageType: ChipImageType.black,
                         ),
                       ),
                       child: ChipWidget(
                         value: 100,
-                        imageType: ChipImageType.black,
                       ),
                     ),
                   ],
@@ -211,8 +192,8 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       children: [
                         Row(
                           children: [
-                            CardPlaceholder(card: player1Cards[0], showBack: showBacks),
-                            CardPlaceholder(card: player1Cards[1], showBack: showBacks),
+                            CardPlaceholder(card: player1Cards[0], showBack: false),
+                            CardPlaceholder(card: player1Cards[1], showBack: false),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -246,6 +227,9 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         DragTarget<double>(
                           onWillAcceptWithDetails: (details) => true,
                           onAcceptWithDetails: (details) {
+                            setState(() {
+                              trips += details.data;
+                            });
                             tripsCircle =
                                 BetCircle(label: 'TRIPS', chipWidget: tripsCircle.buildChipWidget(details.data));
                           },
@@ -261,8 +245,13 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                             DragTarget<double>(
                               onWillAcceptWithDetails: (details) => true,
                               onAcceptWithDetails: (details) {
+                                setState(() {
+                                  totalAnteBlind += details.data * 2;
+                                });
                                 anteCircle =
                                     BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
+                                blindCircle =
+                                    BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
                               },
                               builder: (context, candidateData, rejectedData) {
                                 return anteCircle;
@@ -272,6 +261,11 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                             DragTarget<double>(
                               onWillAcceptWithDetails: (details) => true,
                               onAcceptWithDetails: (details) {
+                                setState(() {
+                                  totalAnteBlind += details.data * 2;
+                                });
+                                anteCircle =
+                                    BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
                                 blindCircle =
                                     BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
                               },
@@ -300,6 +294,20 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                 ),
 
                 const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Total Bet: \$${(totalAnteBlind + trips).toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
 
                 // BALANCE
                 const Align(

@@ -1,37 +1,24 @@
 import 'package:flutter/material.dart';
 
-enum ChipImageType {
-  red,
-  green,
-  black,
-  ten,
-  white,
-}
-
 class ChipWidget extends StatelessWidget {
   final double value;
-  final ChipImageType imageType;
   final double size;
 
   const ChipWidget({
     Key? key,
     required this.value,
-    required this.imageType,
     this.size = 48,
   }) : super(key: key);
 
   String _getAssetPath() {
-    switch (imageType) {
-      case ChipImageType.red:
-        return 'assets/red_chip.png';
-      case ChipImageType.green:
-        return 'assets/green_chip.png';
-      case ChipImageType.black:
-        return 'assets/black_chip.png';
-      case ChipImageType.ten:
-        return 'assets/10_chip.png';
-      case ChipImageType.white:
-        return 'assets/white_chip.png';
+    if (value >= 100) {
+      return 'assets/black_chip.png';
+    } else if (value >= 25) {
+      return 'assets/green_chip.png';
+    } else if (value >= 5) {
+      return 'assets/red_chip.png';
+    } else {
+      return 'assets/white_chip.png';
     }
   }
 
@@ -45,6 +32,21 @@ class ChipWidget extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.contain,
+        ),
+        Text(
+          value.toStringAsFixed(0),
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: size * 0.25,
+            fontWeight: FontWeight.bold,
+            shadows: [
+              Shadow(
+                offset: const Offset(1, 1),
+                blurRadius: 2,
+                color: Colors.black.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
         ),
       ],
     );
