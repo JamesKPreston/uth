@@ -412,14 +412,16 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         ),
                         const SizedBox(width: 12),
                         DragTarget<double>(
-                          onWillAcceptWithDetails: (details) => true,
+                          onWillAcceptWithDetails: (details) => !cardsDealt,
                           onAcceptWithDetails: (details) {
-                            setState(() {
-                              trips += details.data;
-                              player1.bankroll -= details.data;
-                            });
-                            tripsCircle =
-                                BetCircle(label: 'TRIPS', chipWidget: tripsCircle.buildChipWidget(details.data));
+                            if (!cardsDealt) {
+                              setState(() {
+                                trips += details.data;
+                                player1.bankroll -= details.data;
+                              });
+                              tripsCircle =
+                                  BetCircle(label: 'TRIPS', chipWidget: tripsCircle.buildChipWidget(details.data));
+                            }
                           },
                           builder: (context, candidateData, rejectedData) {
                             return tripsCircle;
@@ -431,16 +433,18 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                           children: [
                             const SizedBox(width: 120),
                             DragTarget<double>(
-                              onWillAcceptWithDetails: (details) => true,
+                              onWillAcceptWithDetails: (details) => !cardsDealt,
                               onAcceptWithDetails: (details) {
-                                setState(() {
-                                  totalAnteBlind += details.data * 2;
-                                  player1.bankroll -= details.data * 2;
-                                });
-                                anteCircle =
-                                    BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
-                                blindCircle =
-                                    BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
+                                if (!cardsDealt) {
+                                  setState(() {
+                                    totalAnteBlind += details.data * 2;
+                                    player1.bankroll -= details.data * 2;
+                                  });
+                                  anteCircle =
+                                      BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
+                                  blindCircle =
+                                      BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
+                                }
                               },
                               builder: (context, candidateData, rejectedData) {
                                 return anteCircle;
@@ -448,16 +452,18 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                             ),
                             const SizedBox(width: 20),
                             DragTarget<double>(
-                              onWillAcceptWithDetails: (details) => true,
+                              onWillAcceptWithDetails: (details) => !cardsDealt,
                               onAcceptWithDetails: (details) {
-                                setState(() {
-                                  totalAnteBlind += details.data * 2;
-                                  player1.bankroll -= details.data * 2;
-                                });
-                                anteCircle =
-                                    BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
-                                blindCircle =
-                                    BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
+                                if (!cardsDealt) {
+                                  setState(() {
+                                    totalAnteBlind += details.data * 2;
+                                    player1.bankroll -= details.data * 2;
+                                  });
+                                  anteCircle =
+                                      BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
+                                  blindCircle =
+                                      BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
+                                }
                               },
                               builder: (context, candidateData, rejectedData) {
                                 return blindCircle;
