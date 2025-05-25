@@ -26,14 +26,10 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   List<IPlayingCard> dealer = [];
   List<IPlayingCard> community = [];
   List<bool> communityShowBacks = [true, true, true, true, true]; // Track individual showBack states
-  List<PlayingCardWrapper> tempPlayer = [];
-  List<PlayingCardWrapper> tempDealer = [];
   bool showBacks = true;
   String? player1Hand = '';
   String? dealerHand = '';
   String result = '';
-  String? selectedBetMultiplier;
-  List<String> availableMultipliers = ['4x', '3x'];
   bool fourX = true;
   bool threeX = true;
   bool twoX = false;
@@ -41,8 +37,6 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   int checkRound = 0;
   bool gameEnded = false;
   bool cardsDealt = false;
-  final TextEditingController anteController = TextEditingController(text: '15');
-  double anteAmount = 15;
   double currentBet = 0;
   double totalAnteBlind = 0; // Track total ante + blind amount
   double trips = 0;
@@ -55,7 +49,6 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
     super.initState();
     deck = widget.deck;
     player1 = Player(name: 'Player 1', bankroll: 1000);
-    selectedBetMultiplier = '4x';
   }
 
   void _dealHands() {
@@ -71,7 +64,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   }
 
   void _handleBet() {
-    final betAmount = (totalAnteBlind / 2) * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1');
+    final betAmount = (totalAnteBlind / 2);
 
     if (player1.bankroll >= betAmount) {
       setState(() {
@@ -147,8 +140,6 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
         threeX = false;
         twoX = true;
         oneX = false;
-        availableMultipliers = ['2x'];
-        selectedBetMultiplier = '2x';
       } else if (checkRound == 2) {
         // Show remaining 2 community cards
         for (int i = 3; i < 5; i++) {
@@ -158,8 +149,6 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
         threeX = false;
         twoX = false;
         oneX = true;
-        availableMultipliers = ['1x'];
-        selectedBetMultiplier = '1x';
       } else if (checkRound == 3) {
         // Fold was clicked
         gameEnded = true;
@@ -180,8 +169,6 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
       player1Hand = '';
       dealerHand = '';
       result = '';
-      selectedBetMultiplier = '4x';
-      availableMultipliers = ['3x', '4x'];
       checkRound = 0;
       gameEnded = false;
       currentBet = 0;
@@ -216,98 +203,130 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 12),
-
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                // TOP ROW: Total Bet | Chips | Bankroll
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Draggable(
-                      data: 1.0,
-                      feedback: Material(
-                        color: Colors.transparent,
-                        child: ChipWidget(value: 1),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: ChipWidget(value: 1),
-                      ),
-                      child: ChipWidget(
-                        value: 1,
+                    // Total Bet (left)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Text(
+                        'Total Bet: \$${(totalAnteBlind + trips).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    Draggable(
-                      data: 5.0,
-                      feedback: Material(
-                        color: Colors.transparent,
-                        child: ChipWidget(
-                          value: 5,
+                    // Chips (center)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Draggable(
+                          data: 1.0,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: ChipWidget(value: 1),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ChipWidget(value: 1),
+                          ),
+                          child: ChipWidget(
+                            value: 1,
+                          ),
                         ),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: ChipWidget(
-                          value: 5,
+                        Draggable(
+                          data: 5.0,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: ChipWidget(
+                              value: 5,
+                            ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ChipWidget(
+                              value: 5,
+                            ),
+                          ),
+                          child: ChipWidget(
+                            value: 5,
+                          ),
                         ),
-                      ),
-                      child: ChipWidget(
-                        value: 5,
-                      ),
+                        Draggable(
+                          data: 10.0,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: ChipWidget(
+                              value: 10,
+                            ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ChipWidget(
+                              value: 10,
+                            ),
+                          ),
+                          child: ChipWidget(
+                            value: 10,
+                          ),
+                        ),
+                        Draggable(
+                          data: 25.0,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: ChipWidget(
+                              value: 25,
+                            ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ChipWidget(
+                              value: 25,
+                            ),
+                          ),
+                          child: ChipWidget(
+                            value: 25,
+                          ),
+                        ),
+                        Draggable(
+                          data: 100.0,
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: ChipWidget(
+                              value: 100,
+                            ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ChipWidget(
+                              value: 100,
+                            ),
+                          ),
+                          child: ChipWidget(
+                            value: 100,
+                          ),
+                        ),
+                      ],
                     ),
-                    Draggable(
-                      data: 10.0,
-                      feedback: Material(
-                        color: Colors.transparent,
-                        child: ChipWidget(
-                          value: 10,
+                    // Bankroll (right)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        '\$${player1.bankroll.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: ChipWidget(
-                          value: 10,
-                        ),
-                      ),
-                      child: ChipWidget(
-                        value: 10,
-                      ),
-                    ),
-                    Draggable(
-                      data: 25.0,
-                      feedback: Material(
-                        color: Colors.transparent,
-                        child: ChipWidget(
-                          value: 25,
-                        ),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: ChipWidget(
-                          value: 25,
-                        ),
-                      ),
-                      child: ChipWidget(
-                        value: 25,
-                      ),
-                    ),
-                    Draggable(
-                      data: 100.0,
-                      feedback: Material(
-                        color: Colors.transparent,
-                        child: ChipWidget(
-                          value: 100,
-                        ),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: ChipWidget(
-                          value: 100,
-                        ),
-                      ),
-                      child: ChipWidget(
-                        value: 100,
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
                 // CARDS ROW
                 if (cardsDealt)
                   Row(
@@ -375,9 +394,6 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       ),
                     ],
                   ),
-
-                const SizedBox(height: 8),
-
                 // Game Result
                 if (result.isNotEmpty)
                   Padding(
@@ -391,26 +407,13 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       ),
                     ),
                   ),
-
                 // CENTER BET SPOTS
                 Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const PayoutColumn(
-                          title: 'TRIPS',
-                          payouts: {
-                            'Royal Flush': '50 to 1',
-                            'Straight Flush': '40 to 1',
-                            'Quads': '30 to 1',
-                            'Full House': '8 to 1',
-                            'Flush': '6 to 1',
-                            'Straight': '5 to 1',
-                            'Trips': '3 to 1',
-                          },
-                        ),
-                        const SizedBox(width: 12),
+                        // TRIPS circle on the far left
                         DragTarget<double>(
                           onWillAcceptWithDetails: (details) => !cardsDealt,
                           onAcceptWithDetails: (details) {
@@ -427,15 +430,14 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                             return tripsCircle;
                           },
                         ),
-                        //const BetCircle(label: 'TRIPS'),
-                        // Center betting circles
-                        Row(
-                          children: [
-                            const SizedBox(width: 120),
-                            DragTarget<double>(
-                              onWillAcceptWithDetails: (details) => !cardsDealt,
-                              onAcceptWithDetails: (details) {
-                                if (!cardsDealt) {
+                        // Centered ANTE and BLIND circles
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              DragTarget<double>(
+                                onWillAcceptWithDetails: (details) => true,
+                                onAcceptWithDetails: (details) {
                                   setState(() {
                                     totalAnteBlind += details.data * 2;
                                     player1.bankroll -= details.data * 2;
@@ -444,17 +446,15 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                                       BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
                                   blindCircle =
                                       BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
-                                }
-                              },
-                              builder: (context, candidateData, rejectedData) {
-                                return anteCircle;
-                              },
-                            ),
-                            const SizedBox(width: 20),
-                            DragTarget<double>(
-                              onWillAcceptWithDetails: (details) => !cardsDealt,
-                              onAcceptWithDetails: (details) {
-                                if (!cardsDealt) {
+                                },
+                                builder: (context, candidateData, rejectedData) {
+                                  return anteCircle;
+                                },
+                              ),
+                              const SizedBox(width: 20),
+                              DragTarget<double>(
+                                onWillAcceptWithDetails: (details) => true,
+                                onAcceptWithDetails: (details) {
                                   setState(() {
                                     totalAnteBlind += details.data * 2;
                                     player1.bankroll -= details.data * 2;
@@ -463,178 +463,180 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                                       BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
                                   blindCircle =
                                       BetCircle(label: 'BLIND', chipWidget: blindCircle.buildChipWidget(details.data));
-                                }
-                              },
-                              builder: (context, candidateData, rejectedData) {
-                                return blindCircle;
-                              },
-                            ),
-                            const SizedBox(width: 150),
-                          ],
+                                },
+                                builder: (context, candidateData, rejectedData) {
+                                  return blindCircle;
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                        // Right side with BLIND payout
-                        const PayoutColumn(
-                          title: 'BLIND',
-                          payouts: {
-                            'Royal Flush': '500 to 1',
-                            'Straight Flush': '50 to 1',
-                            'Quads': '10 to 1',
-                            'Full House': '3 to 1',
-                            'Other Hands': 'Push*',
-                          },
-                        ),
+                        // Empty space on the right
+                        SizedBox(width: 48),
                       ],
                     ),
-                    DragTarget<String>(
-                      onWillAcceptWithDetails: (details) => true,
-                      onAcceptWithDetails: (details) {
-                        setState(() {
-                          double value = double.tryParse(details.data) ?? 0.0;
-                          playCircle = BetCircle(label: 'PLAY', chipWidget: playCircle.buildChipWidget(value));
-                        });
-                        _handleBet();
-                        // setState(() {
-                        //   selectedBetMultiplier = details.data;
-                        // });
-                      },
-                      builder: (context, candidateData, rejectedData) {
-                        return playCircle;
-                      },
-                    ),
-                    //const BetCircle(label: 'PLAY'),
-                    const SizedBox(height: 8),
                   ],
                 ),
-                // Game controls
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (gameEnded)
-                      ElevatedButton(
-                        onPressed: _resetGame,
-                        child: const Text('Deal Again'),
-                      )
-                    else ...[
-                      if (cardsDealt) ...[
-                        ElevatedButton(
-                          onPressed: checkRound < 3 ? _handleCheck : null,
-                          child: Text(checkRound < 2 ? 'Check' : 'Fold'),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      if (cardsDealt) ...[
-                        if (fourX) ...[
-                          Draggable(
-                            data: (totalAnteBlind / 2 * 4).toString(),
-                            feedback: Material(
-                              color: Colors.transparent,
-                              child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.5,
-                              child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
-                            ),
-                            child: ChipWidget(
-                              value: totalAnteBlind / 2 * 4,
-                              label: '4x',
-                            ),
-                          )
-                        ],
-                        if (threeX) ...[
-                          Draggable(
-                            data: (totalAnteBlind / 2 * 3).toString(),
-                            feedback: Material(
-                              color: Colors.transparent,
-                              child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.5,
-                              child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
-                            ),
-                            child: ChipWidget(
-                              value: totalAnteBlind / 2 * 3,
-                              label: '3x',
-                            ),
-                          ),
-                        ],
-                        if (twoX) ...[
-                          Draggable(
-                            data: (totalAnteBlind / 2 * 2).toString(),
-                            feedback: Material(
-                              color: Colors.transparent,
-                              child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.5,
-                              child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
-                            ),
-                            child: ChipWidget(
-                              value: totalAnteBlind / 2 * 2,
-                              label: '2x',
-                            ),
-                          ),
-                        ],
-                        if (oneX) ...[
-                          Draggable(
-                            data: (totalAnteBlind / 2).toString(),
-                            feedback: Material(
-                              color: Colors.transparent,
-                              child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.5,
-                              child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
-                            ),
-                            child: ChipWidget(
-                              value: totalAnteBlind / 2,
-                              label: '1x',
-                            ),
-                          ),
-                        ],
-                      ],
-                      if (!cardsDealt) ...[
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: totalAnteBlind > 0 ? _dealHands : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.green,
-                          ),
-                          child: const Text(
-                            'Deal Cards',
-                          ),
-                        ),
-                      ],
-                    ],
-                  ],
+                // Play bet circle below the bet spots (restored)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2.0, bottom: 0.0),
+                  child: DragTarget<String>(
+                    onWillAcceptWithDetails: (details) => true,
+                    onAcceptWithDetails: (details) {
+                      setState(() {
+                        double value = double.tryParse(details.data) ?? 0.0;
+                        playCircle = BetCircle(label: 'PLAY', chipWidget: playCircle.buildChipWidget(value));
+                      });
+                      _handleBet();
+                    },
+                    builder: (context, candidateData, rejectedData) {
+                      return playCircle;
+                    },
+                  ),
                 ),
-
-                const SizedBox(height: 12),
+                // Payout tables row below the play button
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Total Bet: \$${(totalAnteBlind + trips).toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    Transform.scale(
+                      scale: 0.85,
+                      alignment: Alignment.topLeft,
+                      child: PayoutColumn(
+                        title: 'TRIPS',
+                        payouts: const {
+                          'Royal Flush': '50 to 1',
+                          'Straight Flush': '40 to 1',
+                          'Quads': '30 to 1',
+                          'Full House': '8 to 1',
+                          'Flush': '6 to 1',
+                          'Straight': '5 to 1',
+                          'Trips': '3 to 1',
+                        },
                       ),
                     ),
+                    PayoutColumn(
+                      title: 'BLIND',
+                      payouts: const {
+                        'Royal Flush': '500 to 1',
+                        'Straight Flush': '50 to 1',
+                        'Quads': '10 to 1',
+                        'Full House': '3 to 1',
+                        'Other Hands': 'Push*',
+                      },
+                    ),
                   ],
-                ),
-                const SizedBox(height: 8),
-
-                // BALANCE
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Text(
-                    '\$${player1.bankroll.toStringAsFixed(2)}',
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: const Color(0xFF006400),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (gameEnded)
+                ElevatedButton(
+                  onPressed: _resetGame,
+                  child: const Text('Deal Again'),
+                )
+              else ...[
+                if (cardsDealt) ...[
+                  ElevatedButton(
+                    onPressed: checkRound < 3 ? _handleCheck : null,
+                    child: Text(checkRound < 2 ? 'Check' : 'Fold'),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                if (cardsDealt) ...[
+                  if (fourX) ...[
+                    Draggable(
+                      data: (totalAnteBlind / 2 * 4).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2 * 4,
+                        label: '4x',
+                      ),
+                    )
+                  ],
+                  if (threeX) ...[
+                    Draggable(
+                      data: (totalAnteBlind / 2 * 3).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2 * 3,
+                        label: '3x',
+                      ),
+                    ),
+                  ],
+                  if (twoX) ...[
+                    Draggable(
+                      data: (totalAnteBlind / 2 * 2).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2 * 2,
+                        label: '2x',
+                      ),
+                    ),
+                  ],
+                  if (oneX) ...[
+                    Draggable(
+                      data: (totalAnteBlind / 2).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2,
+                        label: '1x',
+                      ),
+                    ),
+                  ],
+                ],
+                if (!cardsDealt) ...[
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: totalAnteBlind > 0 ? _dealHands : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.green,
+                    ),
+                    child: const Text(
+                      'Deal Cards',
+                    ),
+                  ),
+                ],
+              ],
+            ],
           ),
         ),
       ),
