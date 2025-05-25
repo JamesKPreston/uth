@@ -5,12 +5,16 @@ import 'package:ultimate_texas_holdem_poc/utility/poker_hands.dart';
 class Trips implements IBet {
   @override
   bool doesQualify(IHand hand) {
-    return hand.rank.index >= PokerHandRank.threeOfAKind.index;
+    final qualifies = hand.rank.index >= PokerHandRank.threeOfAKind.index;
+    print('[TRIPS] Hand: ${hand.description} (${hand.rank}), Qualifies: $qualifies');
+    return qualifies;
   }
 
   @override
   double payout(IHand hand, double betAmount) {
-    if (doesQualify(hand)) {
+    final qualifies = doesQualify(hand);
+    if (qualifies) {
+      print('[TRIPS] Payout: Qualified with ${hand.description} (${hand.rank})');
       switch (hand.rank) {
         case PokerHandRank.threeOfAKind:
           return betAmount + (betAmount * 3 / 1);
@@ -30,6 +34,7 @@ class Trips implements IBet {
           return betAmount;
       }
     } else {
+      print('[TRIPS] Payout: Did NOT qualify with ${hand.description} (${hand.rank}), pays 0');
       return 0;
     }
   }

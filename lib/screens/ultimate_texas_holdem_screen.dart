@@ -60,7 +60,8 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   }
 
   void _handleBet() {
-    final betAmount = anteAmount * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1');
+    final betAmount = (totalAnteBlind / 2) * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1');
+
     if (player1.bankroll >= betAmount) {
       setState(() {
         player1.bankroll -= betAmount;
@@ -104,12 +105,17 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
           // h1 = deck.evaluate(tempPlayer);
           // h2 = deck.evaluate(tempDealer);
           var ante = Ante().payout(h2, totalAnteBlind / 2);
+          print('Ante payout: $ante');
           var blind = Blind().payout(h1, totalAnteBlind / 2);
+          print('Blind payout: $blind');
           var tripsBet = Trips().payout(h1, trips);
+          print('Trips payout: $tripsBet');
+          print('Current bet: $currentBet');
           var winnings = ante + blind + (currentBet * 2) + tripsBet;
+          print('Total winnings: $winnings');
           result = 'Player 1 wins $winnings with ${h1.description}';
           // Return ante, blind, and 2x bet amount on win
-          player1.bankroll += totalAnteBlind + (currentBet * 2);
+          player1.bankroll += winnings;
         } else {
           result = 'Dealer wins with ${h2.description}';
           // No return on loss
@@ -160,7 +166,13 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
       checkRound = 0;
       gameEnded = false;
       currentBet = 0;
-      trips = 5;
+
+      // Clear out the ante, blind, and trips bet values and circles
+      totalAnteBlind = 0;
+      trips = 0;
+      anteCircle = const BetCircle(label: 'ANTE');
+      blindCircle = const BetCircle(label: 'BLIND');
+      tripsCircle = const BetCircle(label: 'TRIPS');
 
       // Clear and re deal cards
       community.clear();
@@ -280,6 +292,15 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                     // Dealer cards
                     Column(
                       children: [
+                        Text(
+                          dealerHand ?? '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                         Row(
                           children: [
                             CardPlaceholder(card: dealer[0], showBack: showBacks),
@@ -309,6 +330,15 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                     // Player cards
                     Column(
                       children: [
+                        Text(
+                          player1Hand ?? '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                         Row(
                           children: [
                             CardPlaceholder(card: player1Cards[0], showBack: false),
@@ -323,6 +353,20 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                 ),
 
                 const SizedBox(height: 8),
+
+                // Game Result
+                if (result.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      result,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
 
                 // CENTER BET SPOTS
                 Column(
@@ -348,6 +392,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                           onAcceptWithDetails: (details) {
                             setState(() {
                               trips += details.data;
+                              player1.bankroll -= details.data;
                             });
                             tripsCircle =
                                 BetCircle(label: 'TRIPS', chipWidget: tripsCircle.buildChipWidget(details.data));
@@ -366,6 +411,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                               onAcceptWithDetails: (details) {
                                 setState(() {
                                   totalAnteBlind += details.data * 2;
+                                  player1.bankroll -= details.data * 2;
                                 });
                                 anteCircle =
                                     BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
@@ -382,6 +428,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                               onAcceptWithDetails: (details) {
                                 setState(() {
                                   totalAnteBlind += details.data * 2;
+                                  player1.bankroll -= details.data * 2;
                                 });
                                 anteCircle =
                                     BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
@@ -467,11 +514,11 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                 const SizedBox(height: 8),
 
                 // BALANCE
-                const Align(
+                Align(
                   alignment: Alignment.bottomRight,
                   child: Text(
-                    '\$1285',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    '\$${player1.bankroll.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
