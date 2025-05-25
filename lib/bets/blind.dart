@@ -5,12 +5,16 @@ import 'package:ultimate_texas_holdem_poc/utility/poker_hands.dart';
 class Blind implements IBet {
   @override
   bool doesQualify(IHand hand) {
-    return hand.rank.index >= PokerHandRank.straight.index;
+    final qualifies = hand.rank.index >= PokerHandRank.straight.index;
+    print('[BLIND] Hand: ${hand.description} (${hand.rank}), Qualifies: $qualifies');
+    return qualifies;
   }
 
   @override
   double payout(IHand hand, double betAmount) {
-    if (doesQualify(hand)) {
+    final qualifies = doesQualify(hand);
+    if (qualifies) {
+      print('[BLIND] Payout: Qualified with ${hand.description} (${hand.rank})');
       switch (hand.rank) {
         case PokerHandRank.straight:
           return betAmount + (betAmount * 1 / 1);
@@ -28,6 +32,7 @@ class Blind implements IBet {
           return betAmount;
       }
     } else {
+      print('[BLIND] Payout: Did NOT qualify with ${hand.description} (${hand.rank}), push (return original bet)');
       return betAmount;
     }
   }

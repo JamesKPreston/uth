@@ -36,6 +36,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   List<String> availableMultipliers = ['4x', '3x'];
   int checkRound = 0;
   bool gameEnded = false;
+  bool cardsDealt = false;
   final TextEditingController anteController = TextEditingController(text: '15');
   double anteAmount = 15;
   double currentBet = 0;
@@ -49,18 +50,24 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
     super.initState();
     deck = widget.deck;
     player1 = Player(name: 'Player 1', bankroll: 1000);
-    _dealHands();
+    selectedBetMultiplier = '4x';
   }
 
   void _dealHands() {
-    deck.shuffle();
-    player1Cards = deck.draw(2);
-    dealer = deck.draw(2);
-    community = deck.draw(5);
+    setState(() {
+      deck.shuffle();
+      player1Cards = deck.draw(2);
+      dealer = deck.draw(2);
+      community = deck.draw(5);
+      cardsDealt = true;
+      showBacks = true;
+      communityShowBacks = [true, true, true, true, true];
+    });
   }
 
   void _handleBet() {
-    final betAmount = anteAmount * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1');
+    final betAmount = (totalAnteBlind / 2) * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1');
+
     if (player1.bankroll >= betAmount) {
       setState(() {
         player1.bankroll -= betAmount;
@@ -104,12 +111,17 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
           // h1 = deck.evaluate(tempPlayer);
           // h2 = deck.evaluate(tempDealer);
           var ante = Ante().payout(h2, totalAnteBlind / 2);
+          print('Ante payout: $ante');
           var blind = Blind().payout(h1, totalAnteBlind / 2);
+          print('Blind payout: $blind');
           var tripsBet = Trips().payout(h1, trips);
+          print('Trips payout: $tripsBet');
+          print('Current bet: $currentBet');
           var winnings = ante + blind + (currentBet * 2) + tripsBet;
+          print('Total winnings: $winnings');
           result = 'Player 1 wins $winnings with ${h1.description}';
           // Return ante, blind, and 2x bet amount on win
-          player1.bankroll += totalAnteBlind + (currentBet * 2);
+          player1.bankroll += winnings;
         } else {
           result = 'Dealer wins with ${h2.description}';
           // No return on loss
@@ -151,7 +163,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
     setState(() {
       // Reset all state variables
       showBacks = true;
-      communityShowBacks = [true, true, true, true, true]; // Reset community card states
+      communityShowBacks = [true, true, true, true, true];
       player1Hand = '';
       dealerHand = '';
       result = '';
@@ -160,14 +172,19 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
       checkRound = 0;
       gameEnded = false;
       currentBet = 0;
-      trips = 5;
+      cardsDealt = false;
 
-      // Clear and re deal cards
+      // Clear out the ante, blind, and trips bet values and circles
+      totalAnteBlind = 0;
+      trips = 0;
+      anteCircle = const BetCircle(label: 'ANTE');
+      blindCircle = const BetCircle(label: 'BLIND');
+      tripsCircle = const BetCircle(label: 'TRIPS');
+
+      // Clear cards
       community.clear();
       player1Cards.clear();
       dealer.clear();
-      deck.shuffle();
-      _dealHands();
     });
   }
 
@@ -182,6 +199,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 12),
+
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -274,55 +292,88 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                   ],
                 ),
                 // CARDS ROW
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Dealer cards
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            CardPlaceholder(card: dealer[0], showBack: showBacks),
-                            CardPlaceholder(card: dealer[1], showBack: showBacks),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        const Text('Dealer', style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                    // Community cards
-                    Column(
-                      children: [
-                        const Text(
-                          'Community Board',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: List.generate(
-                              5,
-                              (x) => CardPlaceholder(
-                                  card: community[x], showBack: gameEnded ? false : communityShowBacks[x])),
-                        ),
-                      ],
-                    ),
-                    // Player cards
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            CardPlaceholder(card: player1Cards[0], showBack: false),
-                            CardPlaceholder(card: player1Cards[1], showBack: false),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        const Text('Player', style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                  ],
-                ),
+                if (cardsDealt)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Dealer cards
+                      Column(
+                        children: [
+                          Text(
+                            dealerHand ?? '',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              CardPlaceholder(card: dealer[0], showBack: showBacks),
+                              CardPlaceholder(card: dealer[1], showBack: showBacks),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text('Dealer', style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                      // Community cards
+                      Column(
+                        children: [
+                          const Text(
+                            'Community Board',
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: List.generate(
+                                5,
+                                (x) => CardPlaceholder(
+                                    card: community[x], showBack: gameEnded ? false : communityShowBacks[x])),
+                          ),
+                        ],
+                      ),
+                      // Player cards
+                      Column(
+                        children: [
+                          Text(
+                            player1Hand ?? '',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              CardPlaceholder(card: player1Cards[0], showBack: false),
+                              CardPlaceholder(card: player1Cards[1], showBack: false),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text('Player', style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ],
+                  ),
 
                 const SizedBox(height: 8),
+
+                // Game Result
+                if (result.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      result,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
 
                 // CENTER BET SPOTS
                 Column(
@@ -348,6 +399,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                           onAcceptWithDetails: (details) {
                             setState(() {
                               trips += details.data;
+                              player1.bankroll -= details.data;
                             });
                             tripsCircle =
                                 BetCircle(label: 'TRIPS', chipWidget: tripsCircle.buildChipWidget(details.data));
@@ -360,12 +412,13 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         // Center betting circles
                         Row(
                           children: [
-                            const SizedBox(width: 150),
+                            const SizedBox(width: 120),
                             DragTarget<double>(
                               onWillAcceptWithDetails: (details) => true,
                               onAcceptWithDetails: (details) {
                                 setState(() {
                                   totalAnteBlind += details.data * 2;
+                                  player1.bankroll -= details.data * 2;
                                 });
                                 anteCircle =
                                     BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
@@ -382,6 +435,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                               onAcceptWithDetails: (details) {
                                 setState(() {
                                   totalAnteBlind += details.data * 2;
+                                  player1.bankroll -= details.data * 2;
                                 });
                                 anteCircle =
                                     BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
@@ -409,6 +463,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       ],
                     ),
                     const BetCircle(label: 'PLAY'),
+                    const SizedBox(height: 8),
                   ],
                 ),
                 // Game controls
@@ -422,7 +477,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       )
                     else ...[
                       ElevatedButton(
-                        onPressed: checkRound < 3 ? _handleCheck : null,
+                        onPressed: cardsDealt && checkRound < 3 ? _handleCheck : null,
                         child: Text(checkRound < 2 ? 'Check' : 'Fold'),
                       ),
                       const SizedBox(width: 8),
@@ -434,18 +489,33 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                                   child: Text(multiplier),
                                 ))
                             .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedBetMultiplier = value;
-                          });
-                        },
+                        onChanged: cardsDealt
+                            ? (value) {
+                                setState(() {
+                                  selectedBetMultiplier = value;
+                                });
+                              }
+                            : null,
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: _handleBet,
+                        onPressed: cardsDealt ? _handleBet : null,
                         child: Text(
                             'Bet ${(totalAnteBlind / 2) * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1')}'),
                       ),
+                      if (!cardsDealt) ...[
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: totalAnteBlind > 0 ? _dealHands : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.green,
+                          ),
+                          child: const Text(
+                            'Deal Cards',
+                          ),
+                        ),
+                      ],
                     ],
                   ],
                 ),
@@ -467,11 +537,11 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                 const SizedBox(height: 8),
 
                 // BALANCE
-                const Align(
+                Align(
                   alignment: Alignment.bottomRight,
                   child: Text(
-                    '\$1285',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    '\$${player1.bankroll.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
