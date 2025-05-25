@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ChipWidget extends StatelessWidget {
   final double value;
   final double size;
+  final String? label;
 
   const ChipWidget({
     Key? key,
     required this.value,
     this.size = 48,
+    this.label,
   }) : super(key: key);
 
   String _getAssetPath() {
@@ -34,7 +36,7 @@ class ChipWidget extends StatelessWidget {
           fit: BoxFit.contain,
         ),
         Text(
-          value.toStringAsFixed(0),
+          label != null ? '$label' : value.toStringAsFixed(0),
           style: TextStyle(
             color: Colors.black,
             fontSize: size * 0.25,

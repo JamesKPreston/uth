@@ -34,6 +34,10 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   String result = '';
   String? selectedBetMultiplier;
   List<String> availableMultipliers = ['4x', '3x'];
+  bool fourX = true;
+  bool threeX = true;
+  bool twoX = false;
+  bool oneX = false;
   int checkRound = 0;
   bool gameEnded = false;
   bool cardsDealt = false;
@@ -45,6 +49,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   BetCircle tripsCircle = const BetCircle(label: 'TRIPS');
   BetCircle anteCircle = const BetCircle(label: 'ANTE');
   BetCircle blindCircle = const BetCircle(label: 'BLIND');
+  BetCircle playCircle = const BetCircle(label: 'PLAY');
   @override
   void initState() {
     super.initState();
@@ -138,6 +143,10 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
         for (int i = 0; i < 3; i++) {
           communityShowBacks[i] = false;
         }
+        fourX = false;
+        threeX = false;
+        twoX = true;
+        oneX = false;
         availableMultipliers = ['2x'];
         selectedBetMultiplier = '2x';
       } else if (checkRound == 2) {
@@ -145,6 +154,10 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
         for (int i = 3; i < 5; i++) {
           communityShowBacks[i] = false;
         }
+        fourX = false;
+        threeX = false;
+        twoX = false;
+        oneX = true;
         availableMultipliers = ['1x'];
         selectedBetMultiplier = '1x';
       } else if (checkRound == 3) {
@@ -180,11 +193,15 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
       anteCircle = const BetCircle(label: 'ANTE');
       blindCircle = const BetCircle(label: 'BLIND');
       tripsCircle = const BetCircle(label: 'TRIPS');
-
+      playCircle = const BetCircle(label: 'PLAY');
       // Clear cards
       community.clear();
       player1Cards.clear();
       dealer.clear();
+      fourX = true;
+      threeX = true;
+      twoX = false;
+      oneX = false;
     });
   }
 
@@ -462,7 +479,23 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         ),
                       ],
                     ),
-                    const BetCircle(label: 'PLAY'),
+                    DragTarget<String>(
+                      onWillAcceptWithDetails: (details) => true,
+                      onAcceptWithDetails: (details) {
+                        setState(() {
+                          double value = double.tryParse(details.data) ?? 0.0;
+                          playCircle = BetCircle(label: 'PLAY', chipWidget: playCircle.buildChipWidget(value));
+                        });
+                        _handleBet();
+                        // setState(() {
+                        //   selectedBetMultiplier = details.data;
+                        // });
+                      },
+                      builder: (context, candidateData, rejectedData) {
+                        return playCircle;
+                      },
+                    ),
+                    //const BetCircle(label: 'PLAY'),
                     const SizedBox(height: 8),
                   ],
                 ),
@@ -476,33 +509,83 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         child: const Text('Deal Again'),
                       )
                     else ...[
-                      ElevatedButton(
-                        onPressed: cardsDealt && checkRound < 3 ? _handleCheck : null,
-                        child: Text(checkRound < 2 ? 'Check' : 'Fold'),
-                      ),
-                      const SizedBox(width: 8),
-                      DropdownButton<String>(
-                        value: selectedBetMultiplier ?? availableMultipliers.first,
-                        items: availableMultipliers
-                            .map((multiplier) => DropdownMenuItem(
-                                  value: multiplier,
-                                  child: Text(multiplier),
-                                ))
-                            .toList(),
-                        onChanged: cardsDealt
-                            ? (value) {
-                                setState(() {
-                                  selectedBetMultiplier = value;
-                                });
-                              }
-                            : null,
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: cardsDealt ? _handleBet : null,
-                        child: Text(
-                            'Bet ${(totalAnteBlind / 2) * double.parse(selectedBetMultiplier?.replaceAll('x', '') ?? '1')}'),
-                      ),
+                      if (cardsDealt) ...[
+                        ElevatedButton(
+                          onPressed: checkRound < 3 ? _handleCheck : null,
+                          child: Text(checkRound < 2 ? 'Check' : 'Fold'),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      if (cardsDealt) ...[
+                        if (fourX) ...[
+                          Draggable(
+                            data: (totalAnteBlind / 2 * 4).toString(),
+                            feedback: Material(
+                              color: Colors.transparent,
+                              child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                            ),
+                            childWhenDragging: Opacity(
+                              opacity: 0.5,
+                              child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                            ),
+                            child: ChipWidget(
+                              value: totalAnteBlind / 2 * 4,
+                              label: '4x',
+                            ),
+                          )
+                        ],
+                        if (threeX) ...[
+                          Draggable(
+                            data: (totalAnteBlind / 2 * 3).toString(),
+                            feedback: Material(
+                              color: Colors.transparent,
+                              child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                            ),
+                            childWhenDragging: Opacity(
+                              opacity: 0.5,
+                              child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                            ),
+                            child: ChipWidget(
+                              value: totalAnteBlind / 2 * 3,
+                              label: '3x',
+                            ),
+                          ),
+                        ],
+                        if (twoX) ...[
+                          Draggable(
+                            data: (totalAnteBlind / 2 * 2).toString(),
+                            feedback: Material(
+                              color: Colors.transparent,
+                              child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                            ),
+                            childWhenDragging: Opacity(
+                              opacity: 0.5,
+                              child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                            ),
+                            child: ChipWidget(
+                              value: totalAnteBlind / 2 * 2,
+                              label: '2x',
+                            ),
+                          ),
+                        ],
+                        if (oneX) ...[
+                          Draggable(
+                            data: (totalAnteBlind / 2).toString(),
+                            feedback: Material(
+                              color: Colors.transparent,
+                              child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                            ),
+                            childWhenDragging: Opacity(
+                              opacity: 0.5,
+                              child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                            ),
+                            child: ChipWidget(
+                              value: totalAnteBlind / 2,
+                              label: '1x',
+                            ),
+                          ),
+                        ],
+                      ],
                       if (!cardsDealt) ...[
                         const SizedBox(width: 8),
                         ElevatedButton(
