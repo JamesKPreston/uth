@@ -45,6 +45,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   BetCircle tripsCircle = const BetCircle(label: 'TRIPS');
   BetCircle anteCircle = const BetCircle(label: 'ANTE');
   BetCircle blindCircle = const BetCircle(label: 'BLIND');
+  BetCircle playCircle = const BetCircle(label: 'PLAY');
   @override
   void initState() {
     super.initState();
@@ -200,10 +201,70 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
               children: [
                 const SizedBox(height: 12),
 
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Draggable(
+                      data: (totalAnteBlind / 2 * 4).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2 * 4,
+                        label: '4x',
+                      ),
+                    ),
+                    Draggable(
+                      data: (totalAnteBlind / 2 * 3).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2 * 3,
+                        label: '3x',
+                      ),
+                    ),
+                    Draggable(
+                      data: (totalAnteBlind / 2 * 2).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2 * 2,
+                        label: '2x',
+                      ),
+                    ),
+                    Draggable(
+                      data: (totalAnteBlind / 2).toString(),
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.5,
+                        child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                      ),
+                      child: ChipWidget(
+                        value: totalAnteBlind / 2,
+                        label: '1x',
+                      ),
+                    ),
+                    const Draggable(
                       data: 1.0,
                       feedback: Material(
                         color: Colors.transparent,
@@ -217,7 +278,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         value: 1,
                       ),
                     ),
-                    Draggable(
+                    const Draggable(
                       data: 5.0,
                       feedback: Material(
                         color: Colors.transparent,
@@ -235,7 +296,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         value: 5,
                       ),
                     ),
-                    Draggable(
+                    const Draggable(
                       data: 10.0,
                       feedback: Material(
                         color: Colors.transparent,
@@ -253,7 +314,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         value: 10,
                       ),
                     ),
-                    Draggable(
+                    const Draggable(
                       data: 25.0,
                       feedback: Material(
                         color: Colors.transparent,
@@ -271,7 +332,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         value: 25,
                       ),
                     ),
-                    Draggable(
+                    const Draggable(
                       data: 100.0,
                       feedback: Material(
                         color: Colors.transparent,
@@ -462,7 +523,24 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         ),
                       ],
                     ),
-                    const BetCircle(label: 'PLAY'),
+                    DragTarget<String>(
+                      onWillAcceptWithDetails: (details) => true,
+                      onAcceptWithDetails: (details) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Dropped value: ${details.data}'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                        // setState(() {
+                        //   selectedBetMultiplier = details.data;
+                        // });
+                      },
+                      builder: (context, candidateData, rejectedData) {
+                        return playCircle;
+                      },
+                    ),
+                    //const BetCircle(label: 'PLAY'),
                     const SizedBox(height: 8),
                   ],
                 ),
