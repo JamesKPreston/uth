@@ -33,7 +33,6 @@ migrate_working_dir/
 .pub/
 /build/
 
-# Symbolication related
 app.*.symbols
 
 # Obfuscation related
@@ -43,3 +42,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+*.ipa
+*.zip
+report.xml 
+ios/Runner.ipa
+ios/fastlane/report.xml
+ios/Runner.app.dSYM.zip
+ios/Runner.app.dSYM.zip
+ios/Runner.ipa

@@ -2,16 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:playing_cards/playing_cards.dart' as playing_cards;
 import 'package:ultimate_texas_holdem_poc/bets/ante.dart';
 import 'package:ultimate_texas_holdem_poc/bets/blind.dart';
+import 'package:ultimate_texas_holdem_poc/bets/trips.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
-
-class Player {
-  final String name;
-  double bankroll;
-
-  Player({required this.name, required this.bankroll});
-}
+import 'package:ultimate_texas_holdem_poc/player.dart';
 
 class UltimateTexasHoldem extends StatefulWidget {
   final uth_deck.IDeck deck;
@@ -41,6 +36,7 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
   double anteAmount = 15;
   double currentBet = 0;
   double totalAnteBlind = 0; // Track total ante + blind amount
+  double trips = 5;
 
   @override
   void initState() {
@@ -55,7 +51,7 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
     // Subtract ante and blind before dealing
     if (player1.bankroll >= (anteAmount * 2)) {
       setState(() {
-        player1.bankroll -= (anteAmount * 2); // Subtract both ante and blind
+        player1.bankroll -= (anteAmount * 2) + trips; // Subtract both ante and blind
         totalAnteBlind = anteAmount * 2;
         currentBet = 0;
       });
@@ -101,9 +97,9 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
     tempPlayer
         .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.ace)));
     tempPlayer
-        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.king)));
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.diamonds, playing_cards.CardValue.ace)));
     tempPlayer
-        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.queen)));
+        .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.spades, playing_cards.CardValue.ace)));
     tempPlayer
         .add(PlayingCardWrapper(playing_cards.PlayingCard(playing_cards.Suit.hearts, playing_cards.CardValue.jack)));
     tempPlayer
@@ -132,7 +128,7 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
       if (winners.length == 2) {
         result = 'Tie: ${h1.name}';
         // Return ante, blind, and bet amount on tie
-        player1.bankroll += totalAnteBlind + currentBet;
+        player1.bankroll += totalAnteBlind + currentBet - 5;
       } else {
         final winnerCards = winners[0].pokerCards;
         final player1Cards = h1.pokerCards;
@@ -145,7 +141,8 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
           // h2 = deck.evaluate(tempDealer);
           var ante = Ante().payout(h2, totalAnteBlind / 2);
           var blind = Blind().payout(h1, totalAnteBlind / 2);
-          var winnings = ante + blind + (currentBet * 2);
+          var tripsBet = Trips().payout(h1, trips);
+          var winnings = ante + blind + (currentBet * 2) + tripsBet;
           result = 'Player 1 wins $winnings with ${h1.description}';
           // Return ante, blind, and 2x bet amount on win
           player1.bankroll += totalAnteBlind + (currentBet * 2);
@@ -194,6 +191,7 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
       checkRound = 0;
       gameEnded = false;
       currentBet = 0;
+      trips = 5;
 
       // Clear and re deal cards
       community.clear();
@@ -258,37 +256,49 @@ class UltimateTexasHoldemState extends State<UltimateTexasHoldem> {
                       children: [
                         SizedBox(
                           width: 80,
-                          child: TextField(
-                            controller: anteController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Ante/Blind',
-                              isDense: true,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                            ),
-                            onChanged: _updateAnteAmount,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.arrow_upward, size: 20),
-                          onPressed: () {
-                            final newAmount = anteAmount + 1;
-                            anteController.text = newAmount.toString();
-                            _updateAnteAmount(newAmount.toString());
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.arrow_downward, size: 20),
-                          onPressed: () {
-                            if (anteAmount > 0) {
-                              final newAmount = anteAmount - 1;
+                          // INSERT_YOUR_CODE
+                          child: DragTarget<String>(
+                            onWillAcceptWithDetails: (details) => true,
+                            onAcceptWithDetails: (details) {
+                              double newAmount = 0;
+                              switch (details.data) {
+                                case 'red_chip':
+                                  newAmount = 5;
+                                  break;
+                                case 'green_chip':
+                                  newAmount = 25;
+                                  break;
+                              }
+                              newAmount = anteAmount + newAmount;
                               anteController.text = newAmount.toString();
                               _updateAnteAmount(newAmount.toString());
-                            }
-                          },
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              return TextField(
+                                controller: anteController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Ante/Blind',
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                ),
+                                onChanged: _updateAnteAmount,
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
+                    Draggable<String>(
+                      data: 'red_chip',
+                      feedback: Material(
+                        color: Colors.transparent,
+                        child: Image.asset('assets/red_chip.png', width: 50),
+                      ),
+                      childWhenDragging: Container(),
+                      child: Image.asset('assets/red_chip.png', width: 50),
+                    ),
+                    // Image.asset('assets/red_chip.png', width: 50, height: 50),
                   ],
                 ),
               ],
