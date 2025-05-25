@@ -13,6 +13,7 @@ class UTH extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Texas Hold\'em POC',
+      debugShowCheckedModeBanner: false,
       home: UltimateTexasHoldemScreen(deck: Deck()),
       // home: UltimateTexasHoldem(deck: Deck()),
     );
