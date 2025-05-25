@@ -40,6 +40,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   double currentBet = 0;
   double totalAnteBlind = 0; // Track total ante + blind amount
   double trips = 0;
+  double playBet = 0;
   BetCircle tripsCircle = const BetCircle(label: 'TRIPS');
   BetCircle anteCircle = const BetCircle(label: 'ANTE');
   BetCircle blindCircle = const BetCircle(label: 'BLIND');
@@ -64,11 +65,11 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   }
 
   void _handleBet() {
-    final betAmount = (totalAnteBlind / 2);
+    final betAmount = (totalAnteBlind / 2) + playBet;
 
     if (player1.bankroll >= betAmount) {
       setState(() {
-        player1.bankroll -= betAmount;
+        player1.bankroll -= playBet;
         currentBet = betAmount;
         gameEnded = true;
         showBacks = false;
@@ -97,7 +98,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
       if (winners.length == 2) {
         result = 'Tie: ${h1.name}';
         // Return ante, blind, and bet amount on tie
-        player1.bankroll += totalAnteBlind + currentBet - 5;
+        player1.bankroll += totalAnteBlind + playBet - trips;
       } else {
         final winnerCards = winners[0].pokerCards;
         final player1Cards = h1.pokerCards;
@@ -115,7 +116,8 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
           var tripsBet = Trips().payout(h1, trips);
           print('Trips payout: $tripsBet');
           print('Current bet: $currentBet');
-          var winnings = ante + blind + (currentBet * 2) + tripsBet;
+          print('Play bet: $playBet');
+          var winnings = ante + blind + (playBet * 2) + tripsBet;
           print('Total winnings: $winnings');
           result = 'Player 1 wins $winnings with ${h1.description}';
           // Return ante, blind, and 2x bet amount on win
@@ -173,6 +175,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
       gameEnded = false;
       currentBet = 0;
       cardsDealt = false;
+      playBet = 0;
 
       // Clear out the ante, blind, and trips bet values and circles
       totalAnteBlind = 0;
@@ -212,7 +215,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Text(
-                        'Total Bet: \$${(totalAnteBlind + trips).toStringAsFixed(0)}',
+                        'Total Bet: \$${(totalAnteBlind + trips + playBet).toStringAsFixed(0)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -221,7 +224,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       ),
                     ),
                     // Chips (center)
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Draggable(
@@ -472,7 +475,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                           ),
                         ),
                         // Empty space on the right
-                        SizedBox(width: 48),
+                        const SizedBox(width: 48),
                       ],
                     ),
                   ],
@@ -486,6 +489,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       setState(() {
                         double value = double.tryParse(details.data) ?? 0.0;
                         playCircle = BetCircle(label: 'PLAY', chipWidget: playCircle.buildChipWidget(value));
+                        playBet = value;
                       });
                       _handleBet();
                     },
@@ -502,9 +506,9 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                     Transform.scale(
                       scale: 0.85,
                       alignment: Alignment.topLeft,
-                      child: PayoutColumn(
+                      child: const PayoutColumn(
                         title: 'TRIPS',
-                        payouts: const {
+                        payouts: {
                           'Royal Flush': '50 to 1',
                           'Straight Flush': '40 to 1',
                           'Quads': '30 to 1',
@@ -515,9 +519,9 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                         },
                       ),
                     ),
-                    PayoutColumn(
+                    const PayoutColumn(
                       title: 'BLIND',
-                      payouts: const {
+                      payouts: {
                         'Royal Flush': '500 to 1',
                         'Straight Flush': '50 to 1',
                         'Quads': '10 to 1',
