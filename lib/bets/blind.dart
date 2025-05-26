@@ -5,7 +5,7 @@ import 'package:ultimate_texas_holdem_poc/utility/poker_hands.dart';
 class Blind implements IBet {
   @override
   bool doesQualify(IHand hand) {
-    final qualifies = hand.rank.index >= PokerHandRank.straight.index;
+    final qualifies = hand.rank.index <= PokerHandRank.straight.index;
     print('[BLIND] Hand: ${hand.description} (${hand.rank}), Qualifies: $qualifies');
     return qualifies;
   }
