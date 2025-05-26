@@ -5,7 +5,7 @@ import 'package:ultimate_texas_holdem_poc/utility/poker_hands.dart';
 class Trips implements IBet {
   @override
   bool doesQualify(IHand hand) {
-    final qualifies = hand.rank.index >= PokerHandRank.threeOfAKind.index;
+    final qualifies = hand.rank.index <= PokerHandRank.threeOfAKind.index;
     print('[TRIPS] Hand: ${hand.description} (${hand.rank}), Qualifies: $qualifies');
     return qualifies;
   }
