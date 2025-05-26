@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:playing_cards/playing_cards.dart' as playing_cards;
-import 'package:ultimate_texas_holdem_poc/bets/ante.dart';
-import 'package:ultimate_texas_holdem_poc/bets/blind.dart';
-import 'package:ultimate_texas_holdem_poc/bets/trips.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
 import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/card_place_holder_widget.dart';
@@ -10,7 +6,7 @@ import 'package:ultimate_texas_holdem_poc/widgets/bet_circle_widget.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/payout_column_widget.dart';
 import 'package:ultimate_texas_holdem_poc/player.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/chip_widget.dart';
-import 'package:ultimate_texas_holdem_poc/wrapper/playing_card_wrapper.dart';
+import 'package:ultimate_texas_holdem_poc/games/ultimate_texas_holdem.dart';
 
 class UltimateTexasHoldemScreen extends StatefulWidget {
   final uth_deck.IDeck deck;
@@ -56,72 +52,73 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   void _dealHands() {
     setState(() {
       deck.shuffle();
-      // temp player cards: queen of hearts and queen of spades
-      List<IPlayingCard> tempPlayerCards = [
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.spades,
-            playing_cards.CardValue.ace,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.clubs,
-            playing_cards.CardValue.king,
-          ),
-        ),
-      ];
-      //temp dealer cards
-      List<IPlayingCard> tempDealerCards = [
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.diamonds,
-            playing_cards.CardValue.ace,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.clubs,
-            playing_cards.CardValue.two,
-          ),
-        ),
-      ];
-      //temp community cards
-      List<IPlayingCard> tempCommunityCards = [
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.hearts,
-            playing_cards.CardValue.six,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.diamonds,
-            playing_cards.CardValue.six,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.clubs,
-            playing_cards.CardValue.six,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.spades,
-            playing_cards.CardValue.six,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.hearts,
-            playing_cards.CardValue.ace,
-          ),
-        ),
-      ];
-      player1Cards = tempPlayerCards;
-      dealer = tempDealerCards; //deck.draw(2);
-      community = tempCommunityCards; // deck.draw(5);
+      // // temp player cards: queen of hearts and queen of spades
+      // List<IPlayingCard> tempPlayerCards = [
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.spades,
+      //       playing_cards.CardValue.ace,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.clubs,
+      //       playing_cards.CardValue.king,
+      //     ),
+      //   ),
+      // ];
+      // //temp dealer cards
+      // List<IPlayingCard> tempDealerCards = [
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.diamonds,
+      //       playing_cards.CardValue.ace,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.clubs,
+      //       playing_cards.CardValue.two,
+      //     ),
+      //   ),
+      // ];
+      // //temp community cards
+      // List<IPlayingCard> tempCommunityCards = [
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.hearts,
+      //       playing_cards.CardValue.six,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.diamonds,
+      //       playing_cards.CardValue.six,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.clubs,
+      //       playing_cards.CardValue.six,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.spades,
+      //       playing_cards.CardValue.six,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.hearts,
+      //       playing_cards.CardValue.ace,
+      //     ),
+      //   ),
+      // ];
+
+      player1Cards = deck.draw(2);
+      dealer = deck.draw(2);
+      community = deck.draw(5);
       cardsDealt = true;
       showBacks = true;
       communityShowBacks = [true, true, true, true, true];
@@ -150,9 +147,9 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   }
 
   void _evaluateHands() {
-    var h1 = deck.evaluate([...community, ...player1Cards]);
-    var h2 = deck.evaluate([...community, ...dealer]);
-    final winners = deck.winners([h1, h2]);
+    var h1 = UltimateTexasHoldem().evaluate([...community, ...player1Cards]);
+    var h2 = UltimateTexasHoldem().evaluate([...community, ...dealer]);
+    final winners = UltimateTexasHoldem().winners([h1, h2]);
 
     setState(() {
       showBacks = false;
@@ -173,16 +170,16 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
         if (isPlayer1Winner) {
           // h1 = deck.evaluate(tempPlayer);
           // h2 = deck.evaluate(tempDealer);
-          var ante = Ante().payout(h2, totalAnteBlind / 2);
-          print('Ante payout: $ante');
-          var blind = Blind().payout(h1, totalAnteBlind / 2);
-          print('Blind payout: $blind');
-          var tripsBet = Trips().payout(h1, trips);
-          print('Trips payout: $tripsBet');
-          print('Current bet: $currentBet');
-          print('Play bet: $playBet');
+          var ante = UltimateTexasHoldem().ante.payout(h2, totalAnteBlind / 2);
+          //print('Ante payout: $ante');
+          var blind = UltimateTexasHoldem().blind.payout(h1, totalAnteBlind / 2);
+          //print('Blind payout: $blind');
+          var tripsBet = UltimateTexasHoldem().trips.payout(h1, trips);
+          //print('Trips payout: $tripsBet');
+          //print('Current bet: $currentBet');
+          //print('Play bet: $playBet');
           var winnings = ante + blind + (playBet * 2) + tripsBet;
-          print('Total winnings: $winnings');
+          //print('Total winnings: $winnings');
           result = 'Player 1 wins $winnings with ${h1.description}';
           // Return ante, blind, and 2x bet amount on win
           player1.bankroll += winnings;
