@@ -7,9 +7,9 @@ import 'package:ultimate_texas_holdem_poc/utility/poker_hands.dart';
 
 class UltimateTexasHoldem {
   UltimateTexasHoldem();
-  final ante = Ante();
-  final blind = Blind();
-  final trips = Trips();
+  final ante = _Ante();
+  final blind = _Blind();
+  final trips = _Trips();
 
   IHand evaluate(List<IPlayingCard> cards) {
     return Common().evaluate(cards);
@@ -25,7 +25,7 @@ class UltimateTexasHoldem {
   }
 }
 
-class Ante implements IBet {
+class _Ante implements IBet {
   @override
   bool doesQualify(IHand hand) {
     final qualifies = hand.rank.index >= PokerHandRank.onePair.index;
@@ -49,7 +49,7 @@ class Ante implements IBet {
   }
 }
 
-class Blind implements IBet {
+class _Blind implements IBet {
   @override
   bool doesQualify(IHand hand) {
     final qualifies = hand.rank.index <= PokerHandRank.straight.index;
@@ -85,7 +85,7 @@ class Blind implements IBet {
   }
 }
 
-class Trips implements IBet {
+class _Trips implements IBet {
   @override
   bool doesQualify(IHand hand) {
     final qualifies = hand.rank.index <= PokerHandRank.threeOfAKind.index;
