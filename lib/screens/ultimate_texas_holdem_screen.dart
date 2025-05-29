@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/deck_interface.dart' as uth_deck;
-import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/card_place_holder_widget.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/bet_circle_widget.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/payout_column_widget.dart';
-import 'package:ultimate_texas_holdem_poc/player.dart';
+import 'package:ultimate_texas_holdem_poc/utility/player.dart';
 import 'package:ultimate_texas_holdem_poc/widgets/chip_widget.dart';
 import 'package:ultimate_texas_holdem_poc/games/ultimate_texas_holdem.dart';
 
@@ -18,26 +17,7 @@ class UltimateTexasHoldemScreen extends StatefulWidget {
 
 class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   late final uth_deck.IDeck deck;
-  late Player player1;
-  List<IPlayingCard> player1Cards = [];
-  List<IPlayingCard> dealer = [];
-  List<IPlayingCard> community = [];
-  List<bool> communityShowBacks = [true, true, true, true, true]; // Track individual showBack states
-  bool showBacks = true;
-  String? player1Hand = '';
-  String? dealerHand = '';
-  String result = '';
-  bool fourX = true;
-  bool threeX = true;
-  bool twoX = false;
-  bool oneX = false;
-  int checkRound = 0;
-  bool gameEnded = false;
-  bool cardsDealt = false;
-  double currentBet = 0;
-  double totalAnteBlind = 0; // Track total ante + blind amount
-  double trips = 0;
-  double playBet = 0;
+  final ultimateTexasHoldem = UltimateTexasHoldem();
   BetCircle tripsCircle = const BetCircle(label: 'TRIPS');
   BetCircle anteCircle = const BetCircle(label: 'ANTE');
   BetCircle blindCircle = const BetCircle(label: 'BLIND');
@@ -46,7 +26,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   void initState() {
     super.initState();
     deck = widget.deck;
-    player1 = Player(name: 'Player 1', bankroll: 1000);
+    ultimateTexasHoldem.player1 = Player(name: 'Player 1', bankroll: 1000);
   }
 
   void _dealHands() {
@@ -116,24 +96,24 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
       //   ),
       // ];
 
-      player1Cards = deck.draw(2);
-      dealer = deck.draw(2);
-      community = deck.draw(5);
-      cardsDealt = true;
-      showBacks = true;
-      communityShowBacks = [true, true, true, true, true];
+      ultimateTexasHoldem.player1Cards = deck.draw(2);
+      ultimateTexasHoldem.dealer = deck.draw(2);
+      ultimateTexasHoldem.community = deck.draw(5);
+      ultimateTexasHoldem.cardsDealt = true;
+      ultimateTexasHoldem.showBacks = true;
+      ultimateTexasHoldem.communityShowBacks = [true, true, true, true, true];
     });
   }
 
   void _handleBet() {
-    final betAmount = (totalAnteBlind / 2) + playBet;
+    final betAmount = (ultimateTexasHoldem.totalAnteBlind / 2) + ultimateTexasHoldem.playBet;
 
-    if (player1.bankroll >= betAmount) {
+    if (ultimateTexasHoldem.player1.bankroll >= betAmount) {
       setState(() {
-        player1.bankroll -= playBet;
-        currentBet = betAmount;
-        gameEnded = true;
-        showBacks = false;
+        ultimateTexasHoldem.player1.bankroll -= ultimateTexasHoldem.playBet;
+        ultimateTexasHoldem.currentBet = betAmount;
+        ultimateTexasHoldem.gameEnded = true;
+        ultimateTexasHoldem.showBacks = false;
       });
       _evaluateHands();
     } else {
@@ -147,19 +127,19 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   }
 
   void _evaluateHands() {
-    var h1 = UltimateTexasHoldem().evaluate([...community, ...player1Cards]);
-    var h2 = UltimateTexasHoldem().evaluate([...community, ...dealer]);
-    final winners = UltimateTexasHoldem().winners([h1, h2]);
+    var h1 = ultimateTexasHoldem.evaluate([...ultimateTexasHoldem.community, ...ultimateTexasHoldem.player1Cards]);
+    var h2 = ultimateTexasHoldem.evaluate([...ultimateTexasHoldem.community, ...ultimateTexasHoldem.dealer]);
+    final winners = ultimateTexasHoldem.winners([h1, h2]);
 
     setState(() {
-      showBacks = false;
-      player1Hand = h1.description;
-      dealerHand = h2.description;
+      ultimateTexasHoldem.showBacks = false;
+      ultimateTexasHoldem.player1Hand = h1.description;
+      ultimateTexasHoldem.dealerHand = h2.description;
 
       if (winners.length == 2) {
-        result = 'Tie: ${h1.name}';
+        ultimateTexasHoldem.result = 'Tie: ${h1.name}';
         // Return ante, blind, and bet amount on tie
-        player1.bankroll += totalAnteBlind + playBet;
+        ultimateTexasHoldem.player1.bankroll += ultimateTexasHoldem.totalAnteBlind + ultimateTexasHoldem.playBet;
       } else {
         final winnerCards = winners[0].pokerCards;
         final player1Cards = h1.pokerCards;
@@ -168,24 +148,14 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
             .every((card) => player1Cards.any((p1Card) => p1Card.value == card.value && p1Card.suit == card.suit));
 
         if (isPlayer1Winner) {
-          // h1 = deck.evaluate(tempPlayer);
-          // h2 = deck.evaluate(tempDealer);
-          var ante = UltimateTexasHoldem().ante.payout(h2, totalAnteBlind / 2);
-          //print('Ante payout: $ante');
-          var blind = UltimateTexasHoldem().blind.payout(h1, totalAnteBlind / 2);
-          //print('Blind payout: $blind');
-          var tripsBet = UltimateTexasHoldem().trips.payout(h1, trips);
-          //print('Trips payout: $tripsBet');
-          //print('Current bet: $currentBet');
-          //print('Play bet: $playBet');
-          var winnings = ante + blind + (playBet * 2) + tripsBet;
-          //print('Total winnings: $winnings');
-          result = 'Player 1 wins $winnings with ${h1.description}';
-          // Return ante, blind, and 2x bet amount on win
-          player1.bankroll += winnings;
+          var ante = ultimateTexasHoldem.ante.payout(h2, ultimateTexasHoldem.totalAnteBlind / 2);
+          var blind = ultimateTexasHoldem.blind.payout(h1, ultimateTexasHoldem.totalAnteBlind / 2);
+          var tripsBet = ultimateTexasHoldem.trips.payout(h1, ultimateTexasHoldem.tripsBet);
+          var winnings = ante + blind + (ultimateTexasHoldem.playBet * 2) + tripsBet;
+          ultimateTexasHoldem.result = 'Player 1 wins $winnings with ${h1.description}';
+          ultimateTexasHoldem.player1.bankroll += winnings;
         } else {
-          result = 'Dealer wins with ${h2.description}';
-          // No return on loss
+          ultimateTexasHoldem.result = 'Dealer wins with ${h2.description}';
         }
       }
     });
@@ -193,32 +163,32 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
 
   void _handleCheck() {
     setState(() {
-      checkRound++;
-      if (checkRound == 1) {
+      ultimateTexasHoldem.checkRound++;
+      if (ultimateTexasHoldem.checkRound == 1) {
         // Show first 3 community cards
         for (int i = 0; i < 3; i++) {
-          communityShowBacks[i] = false;
+          ultimateTexasHoldem.communityShowBacks[i] = false;
         }
-        fourX = false;
-        threeX = false;
-        twoX = true;
-        oneX = false;
-      } else if (checkRound == 2) {
+        ultimateTexasHoldem.fourX = false;
+        ultimateTexasHoldem.threeX = false;
+        ultimateTexasHoldem.twoX = true;
+        ultimateTexasHoldem.oneX = false;
+      } else if (ultimateTexasHoldem.checkRound == 2) {
         // Show remaining 2 community cards
         for (int i = 3; i < 5; i++) {
-          communityShowBacks[i] = false;
+          ultimateTexasHoldem.communityShowBacks[i] = false;
         }
-        fourX = false;
-        threeX = false;
-        twoX = false;
-        oneX = true;
-      } else if (checkRound == 3) {
+        ultimateTexasHoldem.fourX = false;
+        ultimateTexasHoldem.threeX = false;
+        ultimateTexasHoldem.twoX = false;
+        ultimateTexasHoldem.oneX = true;
+      } else if (ultimateTexasHoldem.checkRound == 3) {
         // Fold was clicked
-        gameEnded = true;
-        showBacks = false; // Show all cards face up
+        ultimateTexasHoldem.gameEnded = true;
+        ultimateTexasHoldem.showBacks = false; // Show all cards face up
         // Ensure all community cards are shown
         for (int i = 0; i < 5; i++) {
-          communityShowBacks[i] = false;
+          ultimateTexasHoldem.communityShowBacks[i] = false;
         }
       }
     });
@@ -227,32 +197,32 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
   void _resetGame() {
     setState(() {
       // Reset all state variables
-      showBacks = true;
-      communityShowBacks = [true, true, true, true, true];
-      player1Hand = '';
-      dealerHand = '';
-      result = '';
-      checkRound = 0;
-      gameEnded = false;
-      currentBet = 0;
-      cardsDealt = false;
-      playBet = 0;
+      ultimateTexasHoldem.showBacks = true;
+      ultimateTexasHoldem.communityShowBacks = [true, true, true, true, true];
+      ultimateTexasHoldem.player1Hand = '';
+      ultimateTexasHoldem.dealerHand = '';
+      ultimateTexasHoldem.result = '';
+      ultimateTexasHoldem.checkRound = 0;
+      ultimateTexasHoldem.gameEnded = false;
+      ultimateTexasHoldem.currentBet = 0;
+      ultimateTexasHoldem.cardsDealt = false;
+      ultimateTexasHoldem.playBet = 0;
 
       // Clear out the ante, blind, and trips bet values and circles
-      totalAnteBlind = 0;
-      trips = 0;
+      ultimateTexasHoldem.totalAnteBlind = 0;
+      ultimateTexasHoldem.tripsBet = 0;
       anteCircle = const BetCircle(label: 'ANTE');
       blindCircle = const BetCircle(label: 'BLIND');
       tripsCircle = const BetCircle(label: 'TRIPS');
       playCircle = const BetCircle(label: 'PLAY');
       // Clear cards
-      community.clear();
-      player1Cards.clear();
-      dealer.clear();
-      fourX = true;
-      threeX = true;
-      twoX = false;
-      oneX = false;
+      ultimateTexasHoldem.community.clear();
+      ultimateTexasHoldem.player1Cards.clear();
+      ultimateTexasHoldem.dealer.clear();
+      ultimateTexasHoldem.fourX = true;
+      ultimateTexasHoldem.threeX = true;
+      ultimateTexasHoldem.twoX = false;
+      ultimateTexasHoldem.oneX = false;
     });
   }
 
@@ -276,7 +246,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Text(
-                        'Total Bet: \$${(totalAnteBlind + trips + playBet).toStringAsFixed(0)}',
+                        'Total Bet: \$${(ultimateTexasHoldem.totalAnteBlind + ultimateTexasHoldem.tripsBet + ultimateTexasHoldem.playBet).toStringAsFixed(0)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -380,7 +350,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: Text(
-                        '\$${player1.bankroll.toStringAsFixed(2)}',
+                        '\$${ultimateTexasHoldem.player1.bankroll.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -392,7 +362,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                 ),
                 const SizedBox(height: 12),
                 // CARDS ROW
-                if (cardsDealt)
+                if (ultimateTexasHoldem.cardsDealt)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -400,7 +370,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       Column(
                         children: [
                           Text(
-                            dealerHand ?? '',
+                            ultimateTexasHoldem.dealerHand ?? '',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -410,8 +380,10 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              CardPlaceholder(card: dealer[0], showBack: showBacks),
-                              CardPlaceholder(card: dealer[1], showBack: showBacks),
+                              CardPlaceholder(
+                                  card: ultimateTexasHoldem.dealer[0], showBack: ultimateTexasHoldem.showBacks),
+                              CardPlaceholder(
+                                  card: ultimateTexasHoldem.dealer[1], showBack: ultimateTexasHoldem.showBacks),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -430,7 +402,10 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                             children: List.generate(
                                 5,
                                 (x) => CardPlaceholder(
-                                    card: community[x], showBack: gameEnded ? false : communityShowBacks[x])),
+                                    card: ultimateTexasHoldem.community[x],
+                                    showBack: ultimateTexasHoldem.gameEnded
+                                        ? false
+                                        : ultimateTexasHoldem.communityShowBacks[x])),
                           ),
                         ],
                       ),
@@ -438,7 +413,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       Column(
                         children: [
                           Text(
-                            player1Hand ?? '',
+                            ultimateTexasHoldem.player1Hand ?? '',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -448,8 +423,8 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              CardPlaceholder(card: player1Cards[0], showBack: false),
-                              CardPlaceholder(card: player1Cards[1], showBack: false),
+                              CardPlaceholder(card: ultimateTexasHoldem.player1Cards[0], showBack: false),
+                              CardPlaceholder(card: ultimateTexasHoldem.player1Cards[1], showBack: false),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -459,11 +434,11 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                     ],
                   ),
                 // Game Result
-                if (result.isNotEmpty)
+                if (ultimateTexasHoldem.result.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
-                      result,
+                      ultimateTexasHoldem.result,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -479,12 +454,12 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       children: [
                         // TRIPS circle on the far left
                         DragTarget<double>(
-                          onWillAcceptWithDetails: (details) => !cardsDealt,
+                          onWillAcceptWithDetails: (details) => !ultimateTexasHoldem.cardsDealt,
                           onAcceptWithDetails: (details) {
-                            if (!cardsDealt) {
+                            if (!ultimateTexasHoldem.cardsDealt) {
                               setState(() {
-                                trips += details.data;
-                                player1.bankroll -= details.data;
+                                ultimateTexasHoldem.tripsBet += details.data;
+                                ultimateTexasHoldem.player1.bankroll -= details.data;
                               });
                               tripsCircle =
                                   BetCircle(label: 'TRIPS', chipWidget: tripsCircle.buildChipWidget(details.data));
@@ -503,8 +478,8 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                                 onWillAcceptWithDetails: (details) => true,
                                 onAcceptWithDetails: (details) {
                                   setState(() {
-                                    totalAnteBlind += details.data * 2;
-                                    player1.bankroll -= details.data * 2;
+                                    ultimateTexasHoldem.totalAnteBlind += details.data * 2;
+                                    ultimateTexasHoldem.player1.bankroll -= details.data * 2;
                                   });
                                   anteCircle =
                                       BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
@@ -520,8 +495,8 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                                 onWillAcceptWithDetails: (details) => true,
                                 onAcceptWithDetails: (details) {
                                   setState(() {
-                                    totalAnteBlind += details.data * 2;
-                                    player1.bankroll -= details.data * 2;
+                                    ultimateTexasHoldem.totalAnteBlind += details.data * 2;
+                                    ultimateTexasHoldem.player1.bankroll -= details.data * 2;
                                   });
                                   anteCircle =
                                       BetCircle(label: 'ANTE', chipWidget: anteCircle.buildChipWidget(details.data));
@@ -550,7 +525,7 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
                       setState(() {
                         double value = double.tryParse(details.data) ?? 0.0;
                         playCircle = BetCircle(label: 'PLAY', chipWidget: playCircle.buildChipWidget(value));
-                        playBet = value;
+                        ultimateTexasHoldem.playBet = value;
                       });
                       _handleBet();
                     },
@@ -604,93 +579,93 @@ class _UltimateTexasHoldemScreenState extends State<UltimateTexasHoldemScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (gameEnded)
+              if (ultimateTexasHoldem.gameEnded)
                 ElevatedButton(
                   onPressed: _resetGame,
                   child: const Text('Deal Again'),
                 )
               else ...[
-                if (cardsDealt) ...[
+                if (ultimateTexasHoldem.cardsDealt) ...[
                   ElevatedButton(
-                    onPressed: checkRound < 3 ? _handleCheck : null,
-                    child: Text(checkRound < 2 ? 'Check' : 'Fold'),
+                    onPressed: ultimateTexasHoldem.checkRound < 3 ? _handleCheck : null,
+                    child: Text(ultimateTexasHoldem.checkRound < 2 ? 'Check' : 'Fold'),
                   ),
                   const SizedBox(width: 8),
                 ],
-                if (cardsDealt) ...[
-                  if (fourX) ...[
+                if (ultimateTexasHoldem.cardsDealt) ...[
+                  if (ultimateTexasHoldem.fourX) ...[
                     Draggable(
-                      data: (totalAnteBlind / 2 * 4).toString(),
+                      data: (ultimateTexasHoldem.totalAnteBlind / 2 * 4).toString(),
                       feedback: Material(
                         color: Colors.transparent,
-                        child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2 * 4, label: '4x'),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
-                        child: ChipWidget(value: totalAnteBlind / 2 * 4, label: '4x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2 * 4, label: '4x'),
                       ),
                       child: ChipWidget(
-                        value: totalAnteBlind / 2 * 4,
+                        value: ultimateTexasHoldem.totalAnteBlind / 2 * 4,
                         label: '4x',
                       ),
                     )
                   ],
-                  if (threeX) ...[
+                  if (ultimateTexasHoldem.threeX) ...[
                     Draggable(
-                      data: (totalAnteBlind / 2 * 3).toString(),
+                      data: (ultimateTexasHoldem.totalAnteBlind / 2 * 3).toString(),
                       feedback: Material(
                         color: Colors.transparent,
-                        child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2 * 3, label: '3x'),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
-                        child: ChipWidget(value: totalAnteBlind / 2 * 3, label: '3x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2 * 3, label: '3x'),
                       ),
                       child: ChipWidget(
-                        value: totalAnteBlind / 2 * 3,
+                        value: ultimateTexasHoldem.totalAnteBlind / 2 * 3,
                         label: '3x',
                       ),
                     ),
                   ],
-                  if (twoX) ...[
+                  if (ultimateTexasHoldem.twoX) ...[
                     Draggable(
-                      data: (totalAnteBlind / 2 * 2).toString(),
+                      data: (ultimateTexasHoldem.totalAnteBlind / 2 * 2).toString(),
                       feedback: Material(
                         color: Colors.transparent,
-                        child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2 * 2, label: '2x'),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
-                        child: ChipWidget(value: totalAnteBlind / 2 * 2, label: '2x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2 * 2, label: '2x'),
                       ),
                       child: ChipWidget(
-                        value: totalAnteBlind / 2 * 2,
+                        value: ultimateTexasHoldem.totalAnteBlind / 2 * 2,
                         label: '2x',
                       ),
                     ),
                   ],
-                  if (oneX) ...[
+                  if (ultimateTexasHoldem.oneX) ...[
                     Draggable(
-                      data: (totalAnteBlind / 2).toString(),
+                      data: (ultimateTexasHoldem.totalAnteBlind / 2).toString(),
                       feedback: Material(
                         color: Colors.transparent,
-                        child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2, label: '1x'),
                       ),
                       childWhenDragging: Opacity(
                         opacity: 0.5,
-                        child: ChipWidget(value: totalAnteBlind / 2, label: '1x'),
+                        child: ChipWidget(value: ultimateTexasHoldem.totalAnteBlind / 2, label: '1x'),
                       ),
                       child: ChipWidget(
-                        value: totalAnteBlind / 2,
+                        value: ultimateTexasHoldem.totalAnteBlind / 2,
                         label: '1x',
                       ),
                     ),
                   ],
                 ],
-                if (!cardsDealt) ...[
+                if (!ultimateTexasHoldem.cardsDealt) ...[
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: totalAnteBlind > 0 ? _dealHands : null,
+                    onPressed: ultimateTexasHoldem.totalAnteBlind > 0 ? _dealHands : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.green,

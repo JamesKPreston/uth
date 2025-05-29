@@ -1,8 +1,9 @@
 import 'package:poker_solver/hand.dart';
-import 'package:ultimate_texas_holdem_poc/games/common.dart';
+import 'package:ultimate_texas_holdem_poc/utility/common.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/bet_interface.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/hand_interface.dart';
 import 'package:ultimate_texas_holdem_poc/interfaces/playing_card_interface.dart';
+import 'package:ultimate_texas_holdem_poc/utility/player.dart';
 import 'package:ultimate_texas_holdem_poc/utility/poker_hands.dart';
 
 class UltimateTexasHoldem {
@@ -10,6 +11,26 @@ class UltimateTexasHoldem {
   final ante = _Ante();
   final blind = _Blind();
   final trips = _Trips();
+  late Player player1;
+  List<IPlayingCard> player1Cards = [];
+  List<IPlayingCard> dealer = [];
+  List<IPlayingCard> community = [];
+  List<bool> communityShowBacks = [true, true, true, true, true]; // Track individual showBack states
+  bool showBacks = true;
+  String? player1Hand = '';
+  String? dealerHand = '';
+  String result = '';
+  bool fourX = true;
+  bool threeX = true;
+  bool twoX = false;
+  bool oneX = false;
+  int checkRound = 0;
+  bool gameEnded = false;
+  bool cardsDealt = false;
+  double currentBet = 0;
+  double totalAnteBlind = 0; // Track total ante + blind amount
+  double tripsBet = 0;
+  double playBet = 0;
 
   IHand evaluate(List<IPlayingCard> cards) {
     return Common().evaluate(cards);

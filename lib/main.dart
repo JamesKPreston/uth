@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ultimate_texas_holdem_poc/deck.dart';
+import 'package:ultimate_texas_holdem_poc/utility/deck.dart';
 import 'screens/ultimate_texas_holdem_screen.dart';
+import 'screens/texas_holdem_bonus_screen.dart';
 
 void main() {
   runApp(const UTH());
@@ -14,8 +15,7 @@ class UTH extends StatelessWidget {
     return MaterialApp(
       title: 'Texas Hold\'em POC',
       debugShowCheckedModeBanner: false,
-      home: UltimateTexasHoldemScreen(deck: Deck()),
-      // home: UltimateTexasHoldem(deck: Deck()),
+      home: TexasHoldemBonusScreen(deck: Deck()),
     );
   }
 }
