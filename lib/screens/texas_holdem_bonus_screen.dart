@@ -37,72 +37,72 @@ class _TexasHoldemBonusScreenState extends State<TexasHoldemBonusScreen> {
     setState(() {
       deck.shuffle();
       // // temp player cards: queen of hearts and queen of spades
-      List<IPlayingCard> tempPlayerCards = [
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.diamonds,
-            playing_cards.CardValue.three,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.hearts,
-            playing_cards.CardValue.three,
-          ),
-        ),
-      ];
-      //temp dealer cards
-      List<IPlayingCard> tempDealerCards = [
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.diamonds,
-            playing_cards.CardValue.five,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.spades,
-            playing_cards.CardValue.ace,
-          ),
-        ),
-      ];
-      //temp community cards
-      List<IPlayingCard> tempCommunityCards = [
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.hearts,
-            playing_cards.CardValue.eight,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.hearts,
-            playing_cards.CardValue.seven,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.clubs,
-            playing_cards.CardValue.three,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.hearts,
-            playing_cards.CardValue.four,
-          ),
-        ),
-        PlayingCardWrapper(
-          playing_cards.PlayingCard(
-            playing_cards.Suit.spades,
-            playing_cards.CardValue.seven,
-          ),
-        ),
-      ];
+      // List<IPlayingCard> tempPlayerCards = [
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.diamonds,
+      //       playing_cards.CardValue.three,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.hearts,
+      //       playing_cards.CardValue.three,
+      //     ),
+      //   ),
+      // ];
+      // //temp dealer cards
+      // List<IPlayingCard> tempDealerCards = [
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.diamonds,
+      //       playing_cards.CardValue.five,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.spades,
+      //       playing_cards.CardValue.ace,
+      //     ),
+      //   ),
+      // ];
+      // //temp community cards
+      // List<IPlayingCard> tempCommunityCards = [
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.hearts,
+      //       playing_cards.CardValue.eight,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.hearts,
+      //       playing_cards.CardValue.seven,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.clubs,
+      //       playing_cards.CardValue.three,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.hearts,
+      //       playing_cards.CardValue.four,
+      //     ),
+      //   ),
+      //   PlayingCardWrapper(
+      //     playing_cards.PlayingCard(
+      //       playing_cards.Suit.spades,
+      //       playing_cards.CardValue.seven,
+      //     ),
+      //   ),
+      // ];
 
-      texasHoldemBonus.player1Cards = tempPlayerCards; // deck.draw(2);
-      texasHoldemBonus.dealer = tempDealerCards; // deck.draw(2);
-      texasHoldemBonus.community = tempCommunityCards; // deck.draw(5);
+      texasHoldemBonus.player1Cards = deck.draw(2);
+      texasHoldemBonus.dealer = deck.draw(2);
+      texasHoldemBonus.community = deck.draw(5);
       texasHoldemBonus.cardsDealt = true;
       texasHoldemBonus.showBacks = true;
       texasHoldemBonus.communityShowBacks = [true, true, true, true, true];
